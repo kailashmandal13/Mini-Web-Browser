@@ -3,49 +3,45 @@
 
 #include <string>
 #include <vector>
-#include <memory>
-#include <iostream>
 
-// Base class for all nodes in the DOM tree
-class HTMLNode {
+// Abstract base class for AST nodes
+class ASTNode {
 public:
-    virtual ~HTMLNode() {}
-    virtual void print(int depth = 0) const = 0;  // Pure virtual function for printing
+    virtual ~ASTNode() = default; // Default destructor
+    virtual std::string getName() const = 0; // Get the name of the node
+    virtual void addChild(ASTNode* child) = 0; // Add a child node
 };
 
-// Class for HTML element nodes (e.g., <div>, <p>)
-class ElementNode : public HTMLNode {
+// Class for element nodes
+class ElementNode : public ASTNode {
 public:
-    std::string tagName;
-    std::vector<std::shared_ptr<HTMLNode>> children;
+    std::string name; // Name of the element
+    std::vector<ASTNode*> children; // Children of this element
 
-    ElementNode(const std::string& name) : tagName(name) {}
+    ElementNode(const std::string& n) : name(n) {} // Constructor
 
-    void addChild(std::shared_ptr<HTMLNode> child) {
-        children.push_back(child);
-    }
+    std::string getName() const override { return name; } // Override getName
 
-    // Print function to visualize the DOM structure
-    void print(int depth = 0) const override {
-        std::cout << std::string(depth * 2, ' ') << "<" << tagName << ">" << std::endl;
-        for (const auto& child : children) {
-            child->print(depth + 1);
-        }
-        std::cout << std::string(depth * 2, ' ') << "</" << tagName << ">" << std::endl;
+    void addChild(ASTNode* child) override {
+        children.push_back(child); // Add child to the vector
     }
 };
 
 // Class for text nodes
-class TextNode : public HTMLNode {
+class TextNode : public ASTNode {
 public:
-    std::string textContent;
+    std::string text; // Text content
 
-    TextNode(const std::string& text) : textContent(text) {}
+    TextNode(const std::string& t) : text(t) {} // Constructor
 
-    // Print function to visualize text within the DOM structure
-    void print(int depth = 0) const override {
-        std::cout << std::string(depth * 2, ' ') << textContent << std::endl;
+    std::string getName() const override { return "Text"; } // Override getName
+
+    void addChild(ASTNode* child) override {
+        // Text nodes do not have children, so do nothing
     }
 };
+
+// Function to print the AST
+void printAST(ASTNode* node, int depth);
 
 #endif // AST_H

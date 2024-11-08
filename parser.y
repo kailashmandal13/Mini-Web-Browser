@@ -1,147 +1,156 @@
 %{
-#include <cstdio>
-#include <string>
 #include "AST.h"
+#include <iostream>
+#include <cstdlib>
+#include <fstream>
+#include <cstring>
+#include <cstdio>
 
-std::shared_ptr<HTMLNode> root;
+int yylex();
+void yyerror(const char *s);
 
-void yyerror(const char* s) {
-    fprintf(stderr, "Parse error: %s\n", s);
-}
-
-#define YYSTYPE std::shared_ptr<HTMLNode>
+ASTNode* root;
+extern FILE *yyin;
 %}
 
-// Define tokens
-%token HTML_TAG HTML_TAG_CLOSE
-%token HEAD_TAG HEAD_TAG_CLOSE
-%token TITLE_TAG TITLE_TAG_CLOSE
-%token BODY_TAG BODY_TAG_CLOSE
-%token NAV_TAG NAV_TAG_CLOSE
-%token UL_TAG UL_TAG_CLOSE
-%token LI_TAG LI_TAG_CLOSE
-%token A_TAG A_TAG_CLOSE
-%token HEADER_TAG HEADER_TAG_CLOSE
-%token H1_TAG H1_TAG_CLOSE
-%token H2_TAG H2_TAG_CLOSE
-%token H3_TAG H3_TAG_CLOSE
-%token H4_TAG H4_TAG_CLOSE
-%token H5_TAG H5_TAG_CLOSE
-%token SECTION_TAG SECTION_TAG_CLOSE
-%token ARTICLE_TAG ARTICLE_TAG_CLOSE
-%token P_TAG P_TAG_CLOSE
-%token STRONG_TAG STRONG_TAG_CLOSE
-%token EM_TAG EM_TAG_CLOSE
-%token PRE_TAG PRE_TAG_CLOSE
-%token BLOCKQUOTE_TAG BLOCKQUOTE_TAG_CLOSE
-%token ASIDE_TAG ASIDE_TAG_CLOSE
-%token FOOTER_TAG FOOTER_TAG_CLOSE
-%token IMG_TAG
-%token TEXT_CONTENT
+%union {
+    char* str;
+    ASTNode* node;
+}
 
-%start html
+%token TEXT
+%token OPEN_TAG CLOSE_TAG
+
+%type <node> document element content elements
+%type <str> TEXT OPEN_TAG CLOSE_TAG
 
 %%
 
-// Grammar rules for the DOM structure
-
-html:
-    HTML_TAG head body HTML_TAG_CLOSE
-    {
-        root = std::make_shared<ElementNode>("html");
-        root->addChild($2);
-        root->addChild($3);
+// Start of parsing
+document:
+    elements { 
+        root = new ElementNode("root");  // Using a generic root node
+        if ($1 != nullptr) {
+            root->addChild($1);
+        }
+        std::cout << "Created root ElementNode.\n";
     }
-;
-
-head:
-    HEAD_TAG title HEAD_TAG_CLOSE
-    {
-        auto headNode = std::make_shared<ElementNode>("head");
-        headNode->addChild($2);
-        $$ = headNode;
-    }
-;
-
-title:
-    TITLE_TAG TEXT_CONTENT TITLE_TAG_CLOSE
-    {
-        auto titleNode = std::make_shared<ElementNode>("title");
-        titleNode->addChild(std::make_shared<TextNode>($2));
-        $$ = titleNode;
-    }
-;
-
-body:
-    BODY_TAG elements BODY_TAG_CLOSE
-    {
-        auto bodyNode = std::make_shared<ElementNode>("body");
-        bodyNode->addChild($2);
-        $$ = bodyNode;
-    }
-;
+    ;
 
 elements:
-    element elements
-    {
-        $$ = $2;
-        $$->addChild($1);
+    element elements { 
+        if ($2 == nullptr) {
+            $$ = $1;
+        } else {
+            $1->addChild($2);
+            $$ = $1;
+        }
     }
-    |
-    /* empty */
-;
+    | element { 
+        $$ = $1; 
+    }
+    | /* empty */ { 
+        $$ = nullptr; 
+    }
+    ;
 
 element:
-    NAV_TAG nav_content NAV_TAG_CLOSE
-    {
-        auto navNode = std::make_shared<ElementNode>("nav");
-        navNode->addChild($2);
-        $$ = navNode;
-    }
-    | HEADER_TAG header_content HEADER_TAG_CLOSE
-    {
-        auto headerNode = std::make_shared<ElementNode>("header");
-        headerNode->addChild($2);
-        $$ = headerNode;
-    }
-    | P_TAG TEXT_CONTENT P_TAG_CLOSE
-    {
-        auto pNode = std::make_shared<ElementNode>("p");
-        pNode->addChild(std::make_shared<TextNode>($2));
-        $$ = pNode;
-    }
-;
+    OPEN_TAG content CLOSE_TAG {
+        std::string openTag = std::string($1).substr(1, strlen($1) - 2);
+        std::string closeTag = std::string($3).substr(2, strlen($3) - 3);
 
-nav_content:
-    UL_TAG ul_content UL_TAG_CLOSE { $$ = $2; }
-;
+        std::cout << "Processed OPEN_TAG: " << $1 << "\n";
+        std::cout << "Processed CLOSE_TAG: " << $3 << "\n";
 
-ul_content:
-    LI_TAG a_content LI_TAG_CLOSE ul_content { $$ = $4; $$->addChild($2); }
-    | /* empty */
-;
-
-a_content:
-    A_TAG TEXT_CONTENT A_TAG_CLOSE
-    {
-        auto aNode = std::make_shared<ElementNode>("a");
-        aNode->addChild(std::make_shared<TextNode>($2));
-        $$ = aNode;
+        if (openTag == closeTag) {
+            ElementNode* elem = new ElementNode($1);
+            if ($2 != nullptr) {
+                elem->addChild($2);
+            }
+            $$ = elem;
+            std::cout << "Created ElementNode: " << $1 << "\n";
+        } else {
+            yyerror("Mismatched opening and closing tags");
+            $$ = nullptr;
+        }
+        free($1);
+        free($3);
     }
-;
+    | OPEN_TAG CLOSE_TAG {
+        std::string openTag = std::string($1).substr(1, strlen($1) - 2);
+        std::string closeTag = std::string($2).substr(2, strlen($2) - 3);
 
-header_content:
-    H1_TAG TEXT_CONTENT H1_TAG_CLOSE
-    {
-        auto h1Node = std::make_shared<ElementNode>("h1");
-        h1Node->addChild(std::make_shared<TextNode>($2));
-        $$ = h1Node;
+        std::cout << "Processed standalone OPEN_TAG: " << $1 << "\n";
+        std::cout << "Processed standalone CLOSE_TAG: " << $2 << "\n";
+
+        if (openTag == closeTag) {
+            ElementNode* elem = new ElementNode($1);
+            $$ = elem;
+            std::cout << "Created standalone ElementNode: " << $1 << "\n";
+        } else {
+            yyerror("Mismatched opening and closing tags");
+            $$ = nullptr;
+        }
+        free($1);
+        free($2);
     }
-;
+    ;
+
+content:
+    content TEXT {
+        std::cout << "Processed TEXT: " << $2 << "\n";
+        if ($1 == nullptr) {
+            $$ = new TextNode($2);
+        } else {
+            $1->addChild(new TextNode($2));
+            $$ = $1;
+        }
+        free($2);
+    }
+    | content element {
+        if ($1 == nullptr) {
+            $$ = $2;
+        } else {
+            $1->addChild($2);
+            $$ = $1;
+        }
+    }
+    | TEXT {
+        std::cout << "Processed single TEXT node: " << $1 << "\n";
+        $$ = new TextNode($1);
+        free($1);
+    }
+    | element {
+        std::cout << "Processed single element inside content.\n";
+        $$ = $1;
+    }
+    | /* empty */ {
+        $$ = nullptr;
+    }
+    ;
 
 %%
 
-int main(int argc, char** argv) {
+// Error handling function
+void yyerror(const char *s) {
+    std::cerr << "Error: " << s << std::endl;
+}
+
+// Main function
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <html-file>\n";
+        return 1;
+    }
+
+    yyin = fopen(argv[1], "r");
+    if (!yyin) {
+        std::cerr << "Error opening file: " << argv[1] << std::endl;
+        return 1;
+    }
+
     yyparse();
+    printAST(root, 0);
+    fclose(yyin);
     return 0;
 }

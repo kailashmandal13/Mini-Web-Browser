@@ -1,0 +1,116 @@
+Grammar
+
+    0 $accept: document $end
+
+    1 document: element
+
+    2 element: OPEN_TAG content CLOSE_TAG
+
+    3 content: TEXT
+    4        | element
+    5        | content element
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    TEXT <str> (258) 3
+    OPEN_TAG <str> (259) 2
+    CLOSE_TAG <str> (260) 2
+
+
+Nonterminals, with rules where they appear
+
+    $accept (6)
+        on left: 0
+    document (7)
+        on left: 1
+        on right: 0
+    element <node> (8)
+        on left: 2
+        on right: 1 4 5
+    content <node> (9)
+        on left: 3 4 5
+        on right: 2 5
+
+
+State 0
+
+    0 $accept: • document $end
+
+    OPEN_TAG  shift, and go to state 1
+
+    document  go to state 2
+    element   go to state 3
+
+
+State 1
+
+    2 element: OPEN_TAG • content CLOSE_TAG
+
+    TEXT      shift, and go to state 4
+    OPEN_TAG  shift, and go to state 1
+
+    element  go to state 5
+    content  go to state 6
+
+
+State 2
+
+    0 $accept: document • $end
+
+    $end  shift, and go to state 7
+
+
+State 3
+
+    1 document: element •
+
+    $default  reduce using rule 1 (document)
+
+
+State 4
+
+    3 content: TEXT •
+
+    $default  reduce using rule 3 (content)
+
+
+State 5
+
+    4 content: element •
+
+    $default  reduce using rule 4 (content)
+
+
+State 6
+
+    2 element: OPEN_TAG content • CLOSE_TAG
+    5 content: content • element
+
+    OPEN_TAG   shift, and go to state 1
+    CLOSE_TAG  shift, and go to state 8
+
+    element  go to state 9
+
+
+State 7
+
+    0 $accept: document $end •
+
+    $default  accept
+
+
+State 8
+
+    2 element: OPEN_TAG content CLOSE_TAG •
+
+    $default  reduce using rule 2 (element)
+
+
+State 9
+
+    5 content: content element •
+
+    $default  reduce using rule 5 (content)

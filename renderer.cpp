@@ -13,6 +13,7 @@ HTMLRenderer::HTMLRenderer(ASTNode* root, QWidget* parent)
 void HTMLRenderer::paintEvent(QPaintEvent*) {
     QPainter painter(this);
     int yPos = MARGIN_TOP;
+    clickableAreas.clear(); // Clear previous clickable areas
     
     if (rootNode) {
         renderNode(rootNode, painter, yPos);
@@ -56,11 +57,11 @@ void HTMLRenderer::renderHeading(QPainter& painter, int& yPos, const std::string
     font.setBold(true);
     painter.setFont(font);
     
-    yPos += 10;
+    yPos += 20;
     
     QString qtext = QString::fromStdString(text);
     painter.drawText(MARGIN_LEFT, yPos, qtext);
-    yPos += font.pointSize() + 10;
+    yPos += font.pointSize() + 20;
 }
 
 void HTMLRenderer::renderList(QPainter& painter, int& yPos, const ASTNode* node, int depth) {
@@ -86,7 +87,9 @@ void HTMLRenderer::renderList(QPainter& painter, int& yPos, const ASTNode* node,
     }
 }
 
-void HTMLRenderer::renderLink(QPainter& painter, int& yPos, const std::string& text, int indent) {
+void HTMLRenderer::renderLink(QPainter& painter, int& yPos, const ASTNode* node, int indent) {
+    if (!node || node->children.empty()) return;
+    
     QFont font("Arial", 12);
     font.setUnderline(true);
     painter.setFont(font);
@@ -94,18 +97,175 @@ void HTMLRenderer::renderLink(QPainter& painter, int& yPos, const std::string& t
     QPen originalPen = painter.pen();
     painter.setPen(Qt::blue);
     
-    painter.drawText(MARGIN_LEFT + indent, yPos, QString::fromStdString(text));
-    yPos += LINE_HEIGHT;
+    QString text;
+    if (!node->children.empty() && node->children[0]) {
+        text = QString::fromStdString(node->children[0]->content);
+    }
+    
+    // Extract href from attributes
+    std::string attrs = node->attributes;
+    size_t hrefStart = attrs.find("href=\"");
+    if (hrefStart != std::string::npos) {
+        hrefStart += 6; // length of 'href="'
+        size_t hrefEnd = attrs.find("\"", hrefStart);
+        if (hrefEnd != std::string::npos) {
+            QString url = QString::fromStdString(attrs.substr(hrefStart, hrefEnd - hrefStart));
+            
+            QFontMetrics fm(font);
+            int textWidth = fm.horizontalAdvance(text);
+            QRect linkRect(MARGIN_LEFT + indent, yPos - fm.height(), textWidth, fm.height());
+            
+            clickableAreas.push_back({linkRect, url});
+        }
+    }
+    
+    painter.drawText(MARGIN_LEFT + indent, yPos, text);
+    yPos += LINE_HEIGHT * 1.5; // Increased line spacing
     
     painter.setPen(originalPen);
     font.setUnderline(false);
     painter.setFont(font);
 }
 
+void HTMLRenderer::renderFormattedText(QPainter& painter, int& yPos, const ASTNode* node, int indent) {
+    if (!node) return;
+    
+    QFont originalFont = painter.font();
+    QFont formattedFont = originalFont;
+    QPen originalPen = painter.pen();
+    
+    bool isBlockquote = node->attributes.find("type=\"blockquote\"") != std::string::npos;
+    
+    // Apply formatting based on type
+    if (node->attributes.find("type=\"strong\"") != std::string::npos) {
+        formattedFont.setBold(true);
+        painter.setFont(formattedFont);
+    } else if (node->attributes.find("type=\"emphasis\"") != std::string::npos) {
+        formattedFont.setItalic(true);
+        painter.setFont(formattedFont);
+    } else if (node->attributes.find("type=\"preformatted\"") != std::string::npos) {
+        formattedFont.setFamily("Courier New");
+        painter.setFont(formattedFont);
+    } else if (isBlockquote) {
+        yPos += 20;  // Increased spacing before blockquote
+        indent += 40;  // Increased indentation for blockquote
+    }
+    
+    // Draw a vertical line for blockquote
+    if (isBlockquote) {
+        QPen blockquotePen(Qt::gray);
+        blockquotePen.setWidth(2);
+        painter.setPen(blockquotePen);
+        painter.drawLine(MARGIN_LEFT + indent - 10, yPos - 15, 
+                        MARGIN_LEFT + indent - 10, yPos + 20);
+        painter.setPen(originalPen);
+    }
+    
+    // Handle text content
+    if (!node->content.empty()) {
+        painter.drawText(MARGIN_LEFT + indent, yPos, QString::fromStdString(node->content));
+    }
+    
+    // Handle child nodes
+    for (const auto* child : node->children) {
+        if (child && child->type == NodeType::TEXT) {
+            painter.drawText(MARGIN_LEFT + indent, yPos, 
+                           QString::fromStdString(child->content));
+            yPos += LINE_HEIGHT;  // Add line spacing after each text node
+        } else if (child) {
+            renderNode(child, painter, yPos, indent);
+        }
+    }
+    
+    // Add extra spacing after blockquote
+    if (isBlockquote) {
+        yPos += 20;  // Increased spacing after blockquote
+    }
+    
+    // Reset font and pen
+    painter.setFont(originalFont);
+    painter.setPen(originalPen);
+}
+
+void HTMLRenderer::renderParagraph(QPainter& painter, int& yPos, const ASTNode* node, int indent) {
+    if (!node) return;
+    
+    QFont font("Arial", 12);
+    painter.setFont(font);
+    
+    int xPos = MARGIN_LEFT + indent;
+    
+    // First pass: calculate total width
+    int totalWidth = 0;
+    for (const auto* child : node->children) {
+        if (!child) continue;
+        
+        if (child->type == NodeType::TEXT) {
+            QString text = QString::fromStdString(child->content);
+            QFontMetrics metrics(painter.font());
+            totalWidth += metrics.horizontalAdvance(text + " ");
+        } else if (child->type == NodeType::FORMATTED_TEXT) {
+            // Handle formatted text width calculation
+            QString text;
+            if (!child->content.empty()) {
+                text = QString::fromStdString(child->content);
+            } else if (!child->children.empty() && child->children[0]) {
+                text = QString::fromStdString(child->children[0]->content);
+            }
+            QFont tempFont = font;
+            if (child->attributes.find("type=\"strong\"") != std::string::npos) {
+                tempFont.setBold(true);
+            } else if (child->attributes.find("type=\"emphasis\"") != std::string::npos) {
+                tempFont.setItalic(true);
+            }
+            QFontMetrics metrics(tempFont);
+            totalWidth += metrics.horizontalAdvance(text + " ");
+        }
+    }
+    
+    // Second pass: render
+    for (const auto* child : node->children) {
+        if (!child) continue;
+        
+        if (child->type == NodeType::TEXT) {
+            QString text = QString::fromStdString(child->content);
+            painter.drawText(xPos, yPos, text);
+            QFontMetrics metrics(painter.font());
+            xPos += metrics.horizontalAdvance(text + " ");
+        } else if (child->type == NodeType::FORMATTED_TEXT) {
+            QFont tempFont = font;
+            if (child->attributes.find("type=\"strong\"") != std::string::npos) {
+                tempFont.setBold(true);
+            } else if (child->attributes.find("type=\"emphasis\"") != std::string::npos) {
+                tempFont.setItalic(true);
+            } else if (child->attributes.find("type=\"preformatted\"") != std::string::npos) {
+                tempFont.setFamily("Courier New");
+            }
+            painter.setFont(tempFont);
+            
+            QString text;
+            if (!child->content.empty()) {
+                text = QString::fromStdString(child->content);
+            } else if (!child->children.empty() && child->children[0]) {
+                text = QString::fromStdString(child->children[0]->content);
+            }
+            
+            painter.drawText(xPos, yPos, text);
+            QFontMetrics metrics(tempFont);
+            xPos += metrics.horizontalAdvance(text + " ");
+            painter.setFont(font);
+        }
+    }
+    
+    yPos += LINE_HEIGHT * 1.5; // Increased from LINE_HEIGHT
+}
+
 void HTMLRenderer::renderNode(const ASTNode* node, QPainter& painter, int& yPos, int depth) {
     if (!node) return;
 
     try {
+        int currentYPos = yPos;
+        
         switch (node->type) {
             case NodeType::TEXT:
                 if (!node->content.empty()) {
@@ -119,23 +279,20 @@ void HTMLRenderer::renderNode(const ASTNode* node, QPainter& painter, int& yPos,
                 }
                 break;
 
-            case NodeType::LIST:
-                renderList(painter, yPos, node, depth);
+            case NodeType::PARAGRAPH:
+                renderParagraph(painter, yPos, node, depth * 20);
+                break;
+
+            case NodeType::FORMATTED_TEXT:
+                renderFormattedText(painter, yPos, node, depth * 20);
                 break;
 
             case NodeType::LINK:
-                if (!node->children.empty() && node->children[0]) {
-                    renderLink(painter, yPos, node->children[0]->content, depth * 20);
-                }
+                renderLink(painter, yPos, node, depth * 20);
                 break;
 
-            case NodeType::PARAGRAPH:
-                for (const auto* child : node->children) {
-                    if (child) {
-                        renderNode(child, painter, yPos, depth);
-                    }
-                }
-                yPos += LINE_HEIGHT/2;
+            case NodeType::IMAGE:
+                renderImage(painter, yPos, node, depth * 20);
                 break;
 
             default:
@@ -146,7 +303,46 @@ void HTMLRenderer::renderNode(const ASTNode* node, QPainter& painter, int& yPos,
                 }
                 break;
         }
+        
+        yPos = std::max(yPos, currentYPos + static_cast<int>(LINE_HEIGHT * 1.5));
+        
     } catch (const std::exception& e) {
         std::cerr << "Error rendering node: " << e.what() << std::endl;
+    }
+}
+
+void HTMLRenderer::mousePressEvent(QMouseEvent* event) {
+    for (const auto& area : clickableAreas) {
+        if (area.rect.contains(event->pos())) {
+            QDesktopServices::openUrl(QUrl(area.url));
+            break;
+        }
+    }
+}
+
+void HTMLRenderer::renderImage(QPainter& painter, int& yPos, const ASTNode* node, int indent) {
+    if (!node) return;
+    
+    // Extract src from attributes
+    std::string attrs = node->attributes;
+    size_t srcStart = attrs.find("src=\"");
+    if (srcStart != std::string::npos) {
+        srcStart += 5; // length of 'src="'
+        size_t srcEnd = attrs.find("\"", srcStart);
+        if (srcEnd != std::string::npos) {
+            QString imagePath = QString::fromStdString(attrs.substr(srcStart, srcEnd - srcStart));
+            QImage image(imagePath);
+            
+            if (!image.isNull()) {
+                // Scale image if needed while maintaining aspect ratio
+                int maxWidth = width() - (MARGIN_LEFT + indent + MARGIN_RIGHT);
+                if (image.width() > maxWidth) {
+                    image = image.scaledToWidth(maxWidth, Qt::SmoothTransformation);
+                }
+                
+                painter.drawImage(MARGIN_LEFT + indent, yPos, image);
+                yPos += image.height() + LINE_HEIGHT * 2; // Add space after image
+            }
+        }
     }
 } 

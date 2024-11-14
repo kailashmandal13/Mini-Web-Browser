@@ -77,14 +77,13 @@
 
 extern FILE* yyin;
 extern int yylex(void);
+extern char* yytext;
 void yyerror(const char* s);
 extern int yylineno;
-
 ASTNode* root = nullptr;
-
 #define YYDEBUG 1
 
-#line 88 "parser.tab.c"
+#line 87 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -519,16 +518,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  5
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   211
+#define YYLAST   241
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  46
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  34
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  59
+#define YYNRULES  61
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  102
+#define YYNSTATES  104
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   300
@@ -580,14 +579,15 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int16 yyrline[] =
+static const yytype_uint8 yyrline[] =
 {
-       0,    47,    47,    57,    72,    82,    91,   103,   113,   117,
-     121,   125,   137,   149,   159,   179,   185,   193,   197,   201,
-     205,   209,   216,   222,   231,   247,   253,   261,   262,   266,
-     275,   279,   291,   307,   313,   321,   328,   334,   342,   349,
-     355,   363,   364,   368,   388,   409,   416,   422,   430,   450,
-     461,   471,   489,   507,   525,   546,   550,   554,   561,   565
+       0,    36,    36,    38,    44,    49,    51,    56,    58,    59,
+      60,    61,    65,    69,    74,    85,    86,    88,    88,    88,
+      89,    89,    89,    89,    91,    92,    94,   100,   101,   103,
+     103,   105,   109,   110,   112,   118,   119,   121,   123,   124,
+     126,   128,   129,   131,   131,   133,   144,   155,   157,   158,
+     160,   171,   176,   178,   187,   196,   205,   216,   216,   216,
+     218,   218
 };
 #endif
 
@@ -629,7 +629,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-39)
+#define YYPACT_NINF (-45)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -643,17 +643,17 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-     -38,    22,    50,    56,   -39,   -39,    59,    67,    64,    33,
-      77,   -39,   111,   -39,    81,   -39,    75,    15,    76,    -5,
-      -8,   110,   -39,   -39,   -39,   -39,   -39,   -39,   -39,    68,
-     167,   167,   167,   167,   167,   -39,   -39,    37,    92,   -39,
-     -39,   167,   167,     9,   -39,   -39,   -39,    70,    48,   -39,
-      -6,   -39,   -39,   -39,   -39,    -9,   -39,   -39,   -39,   -39,
-     -39,   167,   -12,   -39,   117,   127,   137,   147,   157,   -39,
-     -39,   -39,   -39,   -39,    47,    57,   -39,   -39,    78,   -39,
-     -39,   -39,   -39,   -39,   -39,   -39,   -39,   -39,   -39,   105,
-     -39,   -39,   -39,   -39,   -39,   -39,   -39,   -39,   -39,   -39,
-     -39,   -39
+     -43,     9,    26,    22,   -45,   -45,    23,    28,    25,    10,
+      60,   -45,   139,   -45,    61,   -45,   116,    -7,   197,    49,
+      -6,    -4,    43,   117,   -45,   -45,   -45,   -45,   -45,   -45,
+     -45,   -45,   -45,   197,   197,   197,   197,   197,   -45,   -45,
+      53,    64,   -45,   -45,   197,    86,   -45,   -45,   -45,    81,
+      38,     2,   -45,   -10,   -45,   -45,   -45,   -45,    -8,   -45,
+     -45,   -45,   197,   -12,   -45,   -45,   -45,   147,   157,   167,
+     177,   187,   -45,   -45,   -45,   -45,   -45,    69,   -45,   -45,
+     -45,   102,   -45,   -45,   -45,   -45,   -45,   -45,   -45,   -45,
+     -45,   -45,   135,   -45,   -45,   -45,   -45,   -45,   -45,   -45,
+     -45,   -45,   -45,   -45
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -663,33 +663,33 @@ static const yytype_int8 yydefact[] =
 {
        0,     0,     0,     0,     2,     1,     0,     0,     0,     0,
        0,     3,     0,     4,     0,     5,     0,     0,     0,     0,
-       0,     0,    15,    17,    18,    19,    20,    21,     6,     0,
-       0,     0,     0,     0,     0,     7,     8,     0,     0,    10,
-       9,     0,     0,     0,    25,    28,    27,     0,     0,    30,
-       0,    58,    59,    36,    50,     0,    39,    41,    42,    14,
-      16,     0,     0,    46,     0,     0,     0,     0,     0,    23,
-      11,    13,    12,    22,     0,     0,    24,    26,     0,    56,
-      55,    57,    33,    29,    31,    35,    37,    38,    40,     0,
-      45,    47,    51,    52,    53,    54,    49,    44,    43,    32,
-      34,    48
+       0,     0,     0,     0,    15,    17,    18,    19,    20,    21,
+      23,    22,     6,     0,     0,     0,     0,     0,     7,     8,
+       0,     0,    10,     9,     0,     0,    27,    30,    29,     0,
+       0,     0,    32,     0,    60,    61,    38,    52,     0,    41,
+      43,    44,     0,     0,    48,    14,    16,     0,     0,     0,
+       0,     0,    25,    11,    13,    12,    24,     0,    26,    28,
+      45,     0,    58,    57,    59,    35,    31,    33,    37,    39,
+      40,    42,     0,    47,    49,    53,    54,    55,    56,    51,
+      46,    34,    36,    50
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -39,   -39,   -39,   -39,   -39,   -39,   -22,   -28,   -39,   -39,
-      85,   -39,   -39,   -39,    82,   -39,   -39,    79,   -39,   -39,
-     -39,   -39,   -39,    63,   -19,   -18,   112,   -39,    69,   -10,
-     -39,   -27,    54,    89
+     -45,   -45,   -45,   -45,   -45,   -45,   -20,    45,   -45,   -45,
+      68,   -45,   -45,   -45,    39,   -45,   -45,    36,   -45,   -45,
+     -45,   -45,   -45,    35,   -17,   -44,   -15,   -45,    32,    -9,
+     -45,   -25,    15,    52
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     2,     4,     7,     8,    10,    36,    37,    13,    21,
-      22,    23,    24,    43,    44,    25,    48,    49,    78,    26,
-      50,    27,    55,    56,    45,    46,    52,    62,    63,    39,
-      58,    40,    82,    53
+       0,     2,     4,     7,     8,    10,    39,    40,    13,    23,
+      24,    25,    26,    45,    46,    27,    51,    52,    81,    28,
+      53,    29,    58,    59,    30,    48,    31,    63,    64,    42,
+      61,    43,    85,    56
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -697,46 +697,52 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      51,    57,    64,    65,    66,    67,    68,     1,    42,    42,
-      72,    42,    42,    74,    75,    70,    90,    87,    85,    61,
-      81,    29,    29,    76,    41,     3,    42,    71,    79,    80,
-      41,    51,    42,    89,    54,    54,    57,    72,    72,    72,
-      72,    72,    70,    70,    70,    70,    70,    72,    72,    69,
-       5,    81,    70,    70,    71,    71,    71,    71,    71,    79,
-      80,     6,    72,    97,    71,    71,     9,    70,    83,    47,
-      30,    11,    31,    12,    32,    98,    33,    14,    34,    71,
-      30,    35,    31,    15,    32,    41,    33,    42,    34,    28,
-      30,    35,    31,    41,    32,    42,    33,    47,    34,    61,
-      99,    35,    29,    30,    73,    31,    60,    32,    30,    33,
-      31,    30,    32,    31,    33,    32,    34,    33,    88,    35,
-      59,    16,    16,    17,    17,    77,     0,    84,    38,    18,
-      18,    91,   100,    19,    19,    20,    20,   101,    30,    86,
-      31,     0,    32,     0,    33,     0,    34,     0,     0,    35,
-      30,    92,    31,     0,    32,     0,    33,     0,    34,     0,
-      30,    35,    31,    93,    32,     0,    33,     0,    34,     0,
-      30,    35,    31,     0,    32,    94,    33,     0,    34,     0,
-      30,    35,    31,     0,    32,     0,    33,    95,    34,     0,
-      30,    35,    31,     0,    32,     0,    33,     0,    34,    96,
-      30,    35,    31,     0,    32,     0,    33,     0,    34,     0,
-       0,    35
+      47,    41,     1,    54,    60,    55,    83,    18,    44,    18,
+      18,    18,     3,    18,    88,    75,    93,    22,    90,    62,
+      73,    22,    86,    50,    75,    84,     5,     6,    47,    73,
+       9,    74,    11,    82,    12,    57,    54,    83,    55,    57,
+      74,    60,    75,    75,    75,    75,    75,    73,    73,    73,
+      73,    73,    75,    44,    14,    18,    84,    73,    74,    74,
+      74,    74,    74,    49,    82,    72,    15,    75,    74,    32,
+      50,    33,    73,    34,    62,    35,    76,    36,    67,    68,
+      69,    70,    71,    74,    79,   100,    33,    87,    34,    77,
+      35,    66,    36,    91,    37,    94,   102,    38,     0,    80,
+      78,    44,    33,    18,    34,    89,    35,    92,    36,     0,
+      37,     0,     0,    38,    33,     0,    34,    44,    35,    18,
+      36,     0,    37,     0,   101,    38,     0,    65,    16,     0,
+      17,     0,     0,     0,    18,    33,    19,    34,     0,    35,
+      20,    36,    21,    22,    22,     0,     0,     0,     0,    33,
+      16,    34,    17,    35,     0,    36,    18,    37,    19,     0,
+      38,     0,    20,     0,    21,     0,    22,   103,    33,     0,
+      34,     0,    35,     0,    36,     0,    37,     0,     0,    38,
+      33,    95,    34,     0,    35,     0,    36,     0,    37,     0,
+      33,    38,    34,    96,    35,     0,    36,     0,    37,     0,
+      33,    38,    34,     0,    35,    97,    36,     0,    37,     0,
+      33,    38,    34,     0,    35,     0,    36,    98,    37,     0,
+      33,    38,    34,     0,    35,     0,    36,     0,    37,    99,
+      33,    38,    34,     0,    35,     0,    36,     0,    37,     0,
+       0,    38
 };
 
 static const yytype_int8 yycheck[] =
 {
-      19,    20,    30,    31,    32,    33,    34,    45,    17,    17,
-      37,    17,    17,    41,    42,    37,    28,    26,    24,    31,
-      47,    27,    27,    14,    15,     3,    17,    37,    47,    47,
-      15,    50,    17,    61,    43,    43,    55,    64,    65,    66,
-      67,    68,    64,    65,    66,    67,    68,    74,    75,    12,
-       0,    78,    74,    75,    64,    65,    66,    67,    68,    78,
-      78,     5,    89,    16,    74,    75,     7,    89,    20,    21,
-      33,     4,    35,     9,    37,    18,    39,    44,    41,    89,
-      33,    44,    35,     6,    37,    15,    39,    17,    41,     8,
-      33,    44,    35,    15,    37,    17,    39,    21,    41,    31,
-      22,    44,    27,    33,    12,    35,    21,    37,    33,    39,
-      35,    33,    37,    35,    39,    37,    41,    39,    55,    44,
-      10,    11,    11,    13,    13,    43,    -1,    48,    16,    19,
-      19,    62,    78,    23,    23,    25,    25,    32,    33,    50,
+      17,    16,    45,    20,    21,    20,    50,    17,    15,    17,
+      17,    17,     3,    17,    24,    40,    28,    27,    26,    31,
+      40,    27,    20,    21,    49,    50,     0,     5,    45,    49,
+       7,    40,     4,    50,     9,    43,    53,    81,    53,    43,
+      49,    58,    67,    68,    69,    70,    71,    67,    68,    69,
+      70,    71,    77,    15,    44,    17,    81,    77,    67,    68,
+      69,    70,    71,    18,    81,    12,     6,    92,    77,     8,
+      21,    33,    92,    35,    31,    37,    12,    39,    33,    34,
+      35,    36,    37,    92,    45,    16,    33,    51,    35,    44,
+      37,    23,    39,    58,    41,    63,    81,    44,    -1,    18,
+      14,    15,    33,    17,    35,    53,    37,    62,    39,    -1,
+      41,    -1,    -1,    44,    33,    -1,    35,    15,    37,    17,
+      39,    -1,    41,    -1,    22,    44,    -1,    10,    11,    -1,
+      13,    -1,    -1,    -1,    17,    33,    19,    35,    -1,    37,
+      23,    39,    25,    27,    27,    -1,    -1,    -1,    -1,    33,
+      11,    35,    13,    37,    -1,    39,    17,    41,    19,    -1,
+      44,    -1,    23,    -1,    25,    -1,    27,    32,    33,    -1,
       35,    -1,    37,    -1,    39,    -1,    41,    -1,    -1,    44,
       33,    34,    35,    -1,    37,    -1,    39,    -1,    41,    -1,
       33,    44,    35,    36,    37,    -1,    39,    -1,    41,    -1,
@@ -752,16 +758,16 @@ static const yytype_int8 yycheck[] =
 static const yytype_int8 yystos[] =
 {
        0,    45,    47,     3,    48,     0,     5,    49,    50,     7,
-      51,     4,     9,    54,    44,     6,    11,    13,    19,    23,
-      25,    55,    56,    57,    58,    61,    65,    67,     8,    27,
-      33,    35,    37,    39,    41,    44,    52,    53,    72,    75,
-      77,    15,    17,    59,    60,    70,    71,    21,    62,    63,
-      66,    70,    72,    79,    43,    68,    69,    70,    76,    10,
-      56,    31,    73,    74,    53,    53,    53,    53,    53,    12,
-      52,    75,    77,    12,    53,    53,    14,    60,    64,    70,
-      71,    77,    78,    20,    63,    24,    79,    26,    69,    53,
-      28,    74,    34,    36,    38,    40,    42,    16,    18,    22,
-      78,    32
+      51,     4,     9,    54,    44,     6,    11,    13,    17,    19,
+      23,    25,    27,    55,    56,    57,    58,    61,    65,    67,
+      70,    72,     8,    33,    35,    37,    39,    41,    44,    52,
+      53,    72,    75,    77,    15,    59,    60,    70,    71,    53,
+      21,    62,    63,    66,    70,    72,    79,    43,    68,    69,
+      70,    76,    31,    73,    74,    10,    56,    53,    53,    53,
+      53,    53,    12,    52,    75,    77,    12,    53,    14,    60,
+      18,    64,    70,    71,    77,    78,    20,    63,    24,    79,
+      26,    69,    53,    28,    74,    34,    36,    38,    40,    42,
+      16,    22,    78,    32
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
@@ -769,10 +775,11 @@ static const yytype_int8 yyr1[] =
 {
        0,    46,    47,    48,    49,    50,    51,    52,    53,    53,
       53,    53,    53,    53,    54,    55,    55,    56,    56,    56,
-      56,    56,    57,    57,    58,    59,    59,    60,    60,    61,
-      62,    62,    63,    64,    64,    65,    66,    66,    67,    68,
-      68,    69,    69,    70,    71,    72,    73,    73,    74,    75,
-      76,    77,    77,    77,    77,    78,    78,    78,    79,    79
+      56,    56,    56,    56,    57,    57,    58,    59,    59,    60,
+      60,    61,    62,    62,    63,    64,    64,    65,    66,    66,
+      67,    68,    68,    69,    69,    70,    71,    72,    73,    73,
+      74,    75,    76,    77,    77,    77,    77,    78,    78,    78,
+      79,    79
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -780,10 +787,11 @@ static const yytype_int8 yyr2[] =
 {
        0,     2,     2,     3,     2,     3,     3,     1,     1,     1,
        1,     2,     2,     2,     3,     1,     2,     1,     1,     1,
-       1,     1,     3,     3,     3,     1,     2,     1,     1,     3,
-       1,     2,     3,     1,     2,     3,     1,     2,     3,     1,
-       2,     1,     1,     3,     3,     3,     1,     2,     3,     3,
-       1,     3,     3,     3,     3,     1,     1,     1,     1,     1
+       1,     1,     1,     1,     3,     3,     3,     1,     2,     1,
+       1,     3,     1,     2,     3,     1,     2,     3,     1,     2,
+       3,     1,     2,     1,     1,     3,     3,     3,     1,     2,
+       3,     3,     1,     3,     3,     3,     3,     1,     1,     1,
+       1,     1
 };
 
 
@@ -1247,669 +1255,471 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* document: DOCTYPE html  */
-#line 48 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::ROOT);
-        if ((yyvsp[0].node)) node->add_child((yyvsp[0].node));
-        root = node;
-        (yyval.node) = node;
-    }
-#line 1258 "parser.tab.c"
+#line 36 "parser.y"
+                       { auto* node = new ASTNode(NodeType::ROOT); if ((yyvsp[0].node)) node->add_child((yyvsp[0].node)); root = node; (yyval.node) = node; }
+#line 1261 "parser.tab.c"
     break;
 
   case 3: /* html: HTML_START html_content HTML_END  */
-#line 58 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::HTML);
-        if ((yyvsp[-1].node)) {
-            for (auto* child : (yyvsp[-1].node)->children) {
-                node->add_child(child);
-            }
-            (yyvsp[-1].node)->children.clear();
-            delete (yyvsp[-1].node);
-        }
-        (yyval.node) = node;
-    }
-#line 1274 "parser.tab.c"
+#line 38 "parser.y"
+                                       {
+    auto* node = new ASTNode(NodeType::HTML);
+    if ((yyvsp[-1].node)) { for (auto* child : (yyvsp[-1].node)->children) node->add_child(child); (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node); }
+    (yyval.node) = node;
+}
+#line 1271 "parser.tab.c"
     break;
 
   case 4: /* html_content: head_content body_content  */
-#line 73 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::CONTAINER);
-        if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node));
-        if ((yyvsp[0].node)) node->add_child((yyvsp[0].node));
-        (yyval.node) = node;
-    }
-#line 1285 "parser.tab.c"
+#line 44 "parser.y"
+                                        {
+    auto* node = new ASTNode(NodeType::CONTAINER);
+    if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node)); if ((yyvsp[0].node)) node->add_child((yyvsp[0].node)); (yyval.node) = node;
+}
+#line 1280 "parser.tab.c"
     break;
 
   case 5: /* head_content: HEAD_START title HEAD_END  */
-#line 83 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::HEAD);
-        if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node));
-        (yyval.node) = node;
-    }
-#line 1295 "parser.tab.c"
+#line 49 "parser.y"
+                                        { auto* node = new ASTNode(NodeType::HEAD); if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node)); (yyval.node) = node; }
+#line 1286 "parser.tab.c"
     break;
 
   case 6: /* title: TITLE_START TEXT TITLE_END  */
-#line 92 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::TITLE);
-        auto* text_node = new ASTNode(NodeType::TEXT);
-        text_node->content = std::string((yyvsp[-1].text));
-        free((yyvsp[-1].text));
-        node->add_child(text_node);
-        (yyval.node) = node;
-    }
-#line 1308 "parser.tab.c"
+#line 51 "parser.y"
+                                  {
+    auto* node = new ASTNode(NodeType::TITLE); auto* text_node = new ASTNode(NodeType::TEXT);
+    text_node->content = std::string((yyvsp[-1].text)); free((yyvsp[-1].text)); node->add_child(text_node); (yyval.node) = node;
+}
+#line 1295 "parser.tab.c"
     break;
 
   case 7: /* text_content: TEXT  */
-#line 104 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::TEXT);
-        node->content = std::string((yyvsp[0].text));
-        free((yyvsp[0].text));
-        (yyval.node) = node;
-    }
-#line 1319 "parser.tab.c"
+#line 56 "parser.y"
+                   { auto* node = new ASTNode(NodeType::TEXT); node->content = std::string((yyvsp[0].text)); free((yyvsp[0].text)); (yyval.node) = node; }
+#line 1301 "parser.tab.c"
     break;
 
   case 8: /* mixed_content: text_content  */
-#line 114 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1327 "parser.tab.c"
+#line 58 "parser.y"
+                            { (yyval.node) = (yyvsp[0].node); }
+#line 1307 "parser.tab.c"
     break;
 
   case 9: /* mixed_content: formatted_element  */
-#line 118 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1335 "parser.tab.c"
+#line 59 "parser.y"
+                        { (yyval.node) = (yyvsp[0].node); }
+#line 1313 "parser.tab.c"
     break;
 
   case 10: /* mixed_content: link  */
-#line 122 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1343 "parser.tab.c"
+#line 60 "parser.y"
+           { (yyval.node) = (yyvsp[0].node); }
+#line 1319 "parser.tab.c"
     break;
 
   case 11: /* mixed_content: mixed_content text_content  */
-#line 126 "parser.y"
-    {
-        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
-            (yyvsp[-1].node)->add_child((yyvsp[0].node));
-            (yyval.node) = (yyvsp[-1].node);
-        } else {
-            auto* node = new ASTNode(NodeType::PARAGRAPH);
-            node->add_child((yyvsp[-1].node));
-            node->add_child((yyvsp[0].node));
-            (yyval.node) = node;
-        }
+#line 61 "parser.y"
+                                 {
+        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) { (yyvsp[-1].node)->add_child((yyvsp[0].node)); (yyval.node) = (yyvsp[-1].node); }
+        else { auto* node = new ASTNode(NodeType::PARAGRAPH); node->add_child((yyvsp[-1].node)); node->add_child((yyvsp[0].node)); (yyval.node) = node; }
     }
-#line 1359 "parser.tab.c"
+#line 1328 "parser.tab.c"
     break;
 
   case 12: /* mixed_content: mixed_content formatted_element  */
-#line 138 "parser.y"
-    {
-        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
-            (yyvsp[-1].node)->add_child((yyvsp[0].node));
-            (yyval.node) = (yyvsp[-1].node);
-        } else {
-            auto* node = new ASTNode(NodeType::PARAGRAPH);
-            node->add_child((yyvsp[-1].node));
-            node->add_child((yyvsp[0].node));
-            (yyval.node) = node;
-        }
+#line 65 "parser.y"
+                                      {
+        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) { (yyvsp[-1].node)->add_child((yyvsp[0].node)); (yyval.node) = (yyvsp[-1].node); }
+        else { auto* node = new ASTNode(NodeType::PARAGRAPH); node->add_child((yyvsp[-1].node)); node->add_child((yyvsp[0].node)); (yyval.node) = node; }
     }
-#line 1375 "parser.tab.c"
+#line 1337 "parser.tab.c"
     break;
 
   case 13: /* mixed_content: mixed_content link  */
-#line 150 "parser.y"
-    {
+#line 69 "parser.y"
+                         {
         auto* node = new ASTNode(NodeType::PARAGRAPH);
-        if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node));
-        if ((yyvsp[0].node)) node->add_child((yyvsp[0].node));
-        (yyval.node) = node;
+        if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node)); if ((yyvsp[0].node)) node->add_child((yyvsp[0].node)); (yyval.node) = node;
     }
-#line 1386 "parser.tab.c"
+#line 1346 "parser.tab.c"
     break;
 
   case 14: /* body_content: BODY_START body_elements BODY_END  */
-#line 160 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::BODY);
-        if ((yyvsp[-1].node)) {
-            if ((yyvsp[-1].node)->type == NodeType::BODY) {
-                // Transfer children from existing BODY node
-                for (auto* child : (yyvsp[-1].node)->children) {
-                    node->add_child(child);
-                }
-                (yyvsp[-1].node)->children.clear();
-                delete (yyvsp[-1].node);
-            } else {
-                node->add_child((yyvsp[-1].node));
-            }
-        }
-        (yyval.node) = node;
+#line 74 "parser.y"
+                                                {
+    auto* node = new ASTNode(NodeType::BODY);
+    if ((yyvsp[-1].node)) {
+        if ((yyvsp[-1].node)->type == NodeType::BODY) {
+            for (auto* child : (yyvsp[-1].node)->children) node->add_child(child);
+            (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node);
+        } else node->add_child((yyvsp[-1].node));
     }
-#line 1407 "parser.tab.c"
+    (yyval.node) = node;
+}
+#line 1361 "parser.tab.c"
     break;
 
   case 15: /* body_elements: body_element  */
-#line 180 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::BODY);
-        node->add_child((yyvsp[0].node));
-        (yyval.node) = node;
-    }
-#line 1417 "parser.tab.c"
+#line 85 "parser.y"
+                            { auto* node = new ASTNode(NodeType::BODY); node->add_child((yyvsp[0].node)); (yyval.node) = node; }
+#line 1367 "parser.tab.c"
     break;
 
   case 16: /* body_elements: body_elements body_element  */
-#line 186 "parser.y"
-    {
-        (yyvsp[-1].node)->add_child((yyvsp[0].node));
-        (yyval.node) = (yyvsp[-1].node);
-    }
-#line 1426 "parser.tab.c"
+#line 86 "parser.y"
+                                 { (yyvsp[-1].node)->add_child((yyvsp[0].node)); (yyval.node) = (yyvsp[-1].node); }
+#line 1373 "parser.tab.c"
     break;
 
   case 17: /* body_element: nav_element  */
-#line 194 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1434 "parser.tab.c"
+#line 88 "parser.y"
+                          { (yyval.node) = (yyvsp[0].node); }
+#line 1379 "parser.tab.c"
     break;
 
   case 18: /* body_element: header_element  */
-#line 198 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1442 "parser.tab.c"
+#line 88 "parser.y"
+                                                        { (yyval.node) = (yyvsp[0].node); }
+#line 1385 "parser.tab.c"
     break;
 
   case 19: /* body_element: section_element  */
-#line 202 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1450 "parser.tab.c"
+#line 88 "parser.y"
+                                                                                       { (yyval.node) = (yyvsp[0].node); }
+#line 1391 "parser.tab.c"
     break;
 
   case 20: /* body_element: aside_element  */
-#line 206 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1458 "parser.tab.c"
+#line 89 "parser.y"
+                    { (yyval.node) = (yyvsp[0].node); }
+#line 1397 "parser.tab.c"
     break;
 
   case 21: /* body_element: footer_element  */
-#line 210 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1466 "parser.tab.c"
+#line 89 "parser.y"
+                                                  { (yyval.node) = (yyvsp[0].node); }
+#line 1403 "parser.tab.c"
     break;
 
-  case 22: /* nav_element: NAV_START list NAV_END  */
-#line 217 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::NAV);
-        if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node));
-        (yyval.node) = node;
-    }
-#line 1476 "parser.tab.c"
+  case 22: /* body_element: list  */
+#line 89 "parser.y"
+                                                                      { (yyval.node) = (yyvsp[0].node); }
+#line 1409 "parser.tab.c"
     break;
 
-  case 23: /* nav_element: NAV_START mixed_content NAV_END  */
-#line 223 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::NAV);
-        if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node));
-        (yyval.node) = node;
-    }
-#line 1486 "parser.tab.c"
+  case 23: /* body_element: p_element  */
+#line 89 "parser.y"
+                                                                                               { (yyval.node) = (yyvsp[0].node); }
+#line 1415 "parser.tab.c"
     break;
 
-  case 24: /* header_element: HEADER_START header_content HEADER_END  */
-#line 232 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::HEADER);
-        if ((yyvsp[-1].node)) {
-            // Transfer all children from header_content to header node
-            for (auto* child : (yyvsp[-1].node)->children) {
-                node->add_child(child);
-            }
-            (yyvsp[-1].node)->children.clear();  // Prevent double deletion
-            delete (yyvsp[-1].node);
-        }
-        (yyval.node) = node;
-    }
+  case 24: /* nav_element: NAV_START list NAV_END  */
+#line 91 "parser.y"
+                                    { auto* node = new ASTNode(NodeType::NAV); if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node)); (yyval.node) = node; }
+#line 1421 "parser.tab.c"
+    break;
+
+  case 25: /* nav_element: NAV_START mixed_content NAV_END  */
+#line 92 "parser.y"
+                                      { auto* node = new ASTNode(NodeType::NAV); if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node)); (yyval.node) = node; }
+#line 1427 "parser.tab.c"
+    break;
+
+  case 26: /* header_element: HEADER_START header_content HEADER_END  */
+#line 94 "parser.y"
+                                                       {
+    auto* node = new ASTNode(NodeType::HEADER);
+    if ((yyvsp[-1].node)) { for (auto* child : (yyvsp[-1].node)->children) node->add_child(child); (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node); }
+    (yyval.node) = node;
+}
+#line 1437 "parser.tab.c"
+    break;
+
+  case 27: /* header_content: header_item  */
+#line 100 "parser.y"
+                            { auto* node = new ASTNode(NodeType::HEADER); node->add_child((yyvsp[0].node)); (yyval.node) = node; }
+#line 1443 "parser.tab.c"
+    break;
+
+  case 28: /* header_content: header_content header_item  */
+#line 101 "parser.y"
+                                 { (yyvsp[-1].node)->add_child((yyvsp[0].node)); (yyval.node) = (yyvsp[-1].node); }
+#line 1449 "parser.tab.c"
+    break;
+
+  case 29: /* header_item: heading  */
+#line 103 "parser.y"
+                     { (yyval.node) = (yyvsp[0].node); }
+#line 1455 "parser.tab.c"
+    break;
+
+  case 30: /* header_item: p_element  */
+#line 103 "parser.y"
+                                              { (yyval.node) = (yyvsp[0].node); }
+#line 1461 "parser.tab.c"
+    break;
+
+  case 31: /* section_element: SECTION_START section_content SECTION_END  */
+#line 105 "parser.y"
+                                                           { 
+    auto* node = new ASTNode(NodeType::SECTION); if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node)); (yyval.node) = node; 
+}
+#line 1469 "parser.tab.c"
+    break;
+
+  case 32: /* section_content: article_element  */
+#line 109 "parser.y"
+                                 { (yyval.node) = (yyvsp[0].node); }
+#line 1475 "parser.tab.c"
+    break;
+
+  case 33: /* section_content: section_content article_element  */
+#line 110 "parser.y"
+                                      { if (!(yyvsp[-1].node)) (yyval.node) = (yyvsp[0].node); else { (yyvsp[-1].node)->add_child((yyvsp[0].node)); (yyval.node) = (yyvsp[-1].node); } }
+#line 1481 "parser.tab.c"
+    break;
+
+  case 34: /* article_element: ARTICLE_START article_content ARTICLE_END  */
+#line 112 "parser.y"
+                                                           {
+    auto* node = new ASTNode(NodeType::ARTICLE);
+    if ((yyvsp[-1].node)) { for (auto* child : (yyvsp[-1].node)->children) node->add_child(child); (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node); }
+    (yyval.node) = node;
+}
+#line 1491 "parser.tab.c"
+    break;
+
+  case 35: /* article_content: article_item  */
+#line 118 "parser.y"
+                              { auto* node = new ASTNode(NodeType::ARTICLE); node->add_child((yyvsp[0].node)); (yyval.node) = node; }
+#line 1497 "parser.tab.c"
+    break;
+
+  case 36: /* article_content: article_content article_item  */
+#line 119 "parser.y"
+                                   { (yyvsp[-1].node)->add_child((yyvsp[0].node)); (yyval.node) = (yyvsp[-1].node); }
 #line 1503 "parser.tab.c"
     break;
 
-  case 25: /* header_content: header_item  */
-#line 248 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::HEADER);
-        node->add_child((yyvsp[0].node));
-        (yyval.node) = node;
+  case 37: /* aside_element: ASIDE_START aside_content ASIDE_END  */
+#line 121 "parser.y"
+                                                   { (yyval.node) = (yyvsp[-1].node); }
+#line 1509 "parser.tab.c"
+    break;
+
+  case 38: /* aside_content: aside_item  */
+#line 123 "parser.y"
+                          { auto* node = new ASTNode(NodeType::ASIDE); node->add_child((yyvsp[0].node)); (yyval.node) = node; }
+#line 1515 "parser.tab.c"
+    break;
+
+  case 39: /* aside_content: aside_content aside_item  */
+#line 124 "parser.y"
+                               { (yyvsp[-1].node)->add_child((yyvsp[0].node)); (yyval.node) = (yyvsp[-1].node); }
+#line 1521 "parser.tab.c"
+    break;
+
+  case 40: /* footer_element: FOOTER_START footer_content FOOTER_END  */
+#line 126 "parser.y"
+                                                       { (yyval.node) = (yyvsp[-1].node); }
+#line 1527 "parser.tab.c"
+    break;
+
+  case 41: /* footer_content: footer_item  */
+#line 128 "parser.y"
+                            { auto* node = new ASTNode(NodeType::FOOTER); node->add_child((yyvsp[0].node)); (yyval.node) = node; }
+#line 1533 "parser.tab.c"
+    break;
+
+  case 42: /* footer_content: footer_content footer_item  */
+#line 129 "parser.y"
+                                 { (yyvsp[-1].node)->add_child((yyvsp[0].node)); (yyval.node) = (yyvsp[-1].node); }
+#line 1539 "parser.tab.c"
+    break;
+
+  case 43: /* footer_item: p_element  */
+#line 131 "parser.y"
+                       { (yyval.node) = (yyvsp[0].node); }
+#line 1545 "parser.tab.c"
+    break;
+
+  case 44: /* footer_item: img_element  */
+#line 131 "parser.y"
+                                                  { (yyval.node) = (yyvsp[0].node); }
+#line 1551 "parser.tab.c"
+    break;
+
+  case 45: /* p_element: P_START mixed_content P_END  */
+#line 133 "parser.y"
+                                       {
+    auto* node = new ASTNode(NodeType::PARAGRAPH);
+    if ((yyvsp[-1].node)) {
+        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
+            for (auto* child : (yyvsp[-1].node)->children) node->add_child(child);
+            (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node);
+        } else node->add_child((yyvsp[-1].node));
     }
-#line 1513 "parser.tab.c"
+    (yyval.node) = node;
+}
+#line 1566 "parser.tab.c"
     break;
 
-  case 26: /* header_content: header_content header_item  */
-#line 254 "parser.y"
-    {
-        (yyvsp[-1].node)->add_child((yyvsp[0].node));
-        (yyval.node) = (yyvsp[-1].node);
+  case 46: /* heading: H_START mixed_content H_END  */
+#line 144 "parser.y"
+                                     {
+    auto* node = new ASTNode(NodeType::HEADING); node->heading_level = (yyvsp[-2].number);
+    if ((yyvsp[-1].node)) {
+        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
+            for (auto* child : (yyvsp[-1].node)->children) node->add_child(child);
+            (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node);
+        } else node->add_child((yyvsp[-1].node));
     }
-#line 1522 "parser.tab.c"
+    (yyval.node) = node;
+}
+#line 1581 "parser.tab.c"
     break;
 
-  case 27: /* header_item: heading  */
-#line 261 "parser.y"
-            { (yyval.node) = (yyvsp[0].node); }
-#line 1528 "parser.tab.c"
+  case 47: /* list: UL_START list_items UL_END  */
+#line 155 "parser.y"
+                                 { (yyval.node) = (yyvsp[-1].node); }
+#line 1587 "parser.tab.c"
     break;
 
-  case 28: /* header_item: p_element  */
-#line 262 "parser.y"
-                { (yyval.node) = (yyvsp[0].node); }
-#line 1534 "parser.tab.c"
+  case 48: /* list_items: list_item  */
+#line 157 "parser.y"
+                      { auto* node = new ASTNode(NodeType::LIST); node->add_child((yyvsp[0].node)); (yyval.node) = node; }
+#line 1593 "parser.tab.c"
     break;
 
-  case 29: /* section_element: SECTION_START section_content SECTION_END  */
-#line 267 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::SECTION);
-        if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node));
-        (yyval.node) = node;
+  case 49: /* list_items: list_items list_item  */
+#line 158 "parser.y"
+                           { (yyvsp[-1].node)->add_child((yyvsp[0].node)); (yyval.node) = (yyvsp[-1].node); }
+#line 1599 "parser.tab.c"
+    break;
+
+  case 50: /* list_item: LI_START mixed_content LI_END  */
+#line 160 "parser.y"
+                                         {
+    auto* node = new ASTNode(NodeType::LIST_ITEM);
+    if ((yyvsp[-1].node)) {
+        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
+            for (auto* child : (yyvsp[-1].node)->children) node->add_child(child);
+            (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node);
+        } else node->add_child((yyvsp[-1].node));
     }
-#line 1544 "parser.tab.c"
+    (yyval.node) = node;
+}
+#line 1614 "parser.tab.c"
     break;
 
-  case 30: /* section_content: article_element  */
-#line 276 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
+  case 51: /* link: A_START mixed_content A_END  */
+#line 171 "parser.y"
+                                  {
+    auto* node = new ASTNode(NodeType::LINK); node->attributes = std::string((yyvsp[-2].text));
+    if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node)); free((yyvsp[-2].text)); (yyval.node) = node;
+}
+#line 1623 "parser.tab.c"
+    break;
+
+  case 52: /* img_element: IMG  */
+#line 176 "parser.y"
+                 { auto* node = new ASTNode(NodeType::IMAGE); node->attributes = std::string((yyvsp[0].text)); free((yyvsp[0].text)); (yyval.node) = node; }
+#line 1629 "parser.tab.c"
+    break;
+
+  case 53: /* formatted_element: STRONG_START mixed_content STRONG_END  */
+#line 178 "parser.y"
+                                                         {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT); node->attributes = "type=\"strong\"";
+    if ((yyvsp[-1].node)) {
+        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
+            for (auto* child : (yyvsp[-1].node)->children) node->add_child(child);
+            (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node);
+        } else node->add_child((yyvsp[-1].node));
     }
-#line 1552 "parser.tab.c"
+    (yyval.node) = node;
+}
+#line 1644 "parser.tab.c"
     break;
 
-  case 31: /* section_content: section_content article_element  */
-#line 280 "parser.y"
-    {
-        if (!(yyvsp[-1].node)) {
-            (yyval.node) = (yyvsp[0].node);
-        } else {
-            (yyvsp[-1].node)->add_child((yyvsp[0].node));
-            (yyval.node) = (yyvsp[-1].node);
-        }
+  case 54: /* formatted_element: EM_START mixed_content EM_END  */
+#line 187 "parser.y"
+                                  {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT); node->attributes = "type=\"emphasis\"";
+    if ((yyvsp[-1].node)) {
+        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
+            for (auto* child : (yyvsp[-1].node)->children) node->add_child(child);
+            (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node);
+        } else node->add_child((yyvsp[-1].node));
     }
-#line 1565 "parser.tab.c"
+    (yyval.node) = node;
+}
+#line 1659 "parser.tab.c"
     break;
 
-  case 32: /* article_element: ARTICLE_START article_content ARTICLE_END  */
-#line 292 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::ARTICLE);
-        if ((yyvsp[-1].node)) {
-            // Transfer all children from article_content to article node
-            for (auto* child : (yyvsp[-1].node)->children) {
-                node->add_child(child);
-            }
-            (yyvsp[-1].node)->children.clear();  // Prevent double deletion
-            delete (yyvsp[-1].node);
-        }
-        (yyval.node) = node;
+  case 55: /* formatted_element: PRE_START mixed_content PRE_END  */
+#line 196 "parser.y"
+                                    {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT); node->attributes = "type=\"preformatted\"";
+    if ((yyvsp[-1].node)) {
+        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
+            for (auto* child : (yyvsp[-1].node)->children) node->add_child(child);
+            (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node);
+        } else node->add_child((yyvsp[-1].node));
     }
-#line 1582 "parser.tab.c"
+    (yyval.node) = node;
+}
+#line 1674 "parser.tab.c"
     break;
 
-  case 33: /* article_content: article_item  */
-#line 308 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::ARTICLE);
-        node->add_child((yyvsp[0].node));
-        (yyval.node) = node;
+  case 56: /* formatted_element: BLOCKQUOTE_START mixed_content BLOCKQUOTE_END  */
+#line 205 "parser.y"
+                                                  {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT); node->attributes = "type=\"blockquote\"";
+    if ((yyvsp[-1].node)) {
+        if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
+            for (auto* child : (yyvsp[-1].node)->children) node->add_child(child);
+            (yyvsp[-1].node)->children.clear(); delete (yyvsp[-1].node);
+        } else node->add_child((yyvsp[-1].node));
     }
-#line 1592 "parser.tab.c"
+    (yyval.node) = node;
+}
+#line 1689 "parser.tab.c"
     break;
 
-  case 34: /* article_content: article_content article_item  */
-#line 314 "parser.y"
-    {
-        (yyvsp[-1].node)->add_child((yyvsp[0].node));
-        (yyval.node) = (yyvsp[-1].node);
-    }
-#line 1601 "parser.tab.c"
+  case 57: /* article_item: heading  */
+#line 216 "parser.y"
+                      { (yyval.node) = (yyvsp[0].node); }
+#line 1695 "parser.tab.c"
     break;
 
-  case 35: /* aside_element: ASIDE_START aside_content ASIDE_END  */
-#line 322 "parser.y"
-    {
-        (yyval.node) = (yyvsp[-1].node);  // aside_content already creates ASIDE node
-    }
-#line 1609 "parser.tab.c"
+  case 58: /* article_item: p_element  */
+#line 216 "parser.y"
+                                               { (yyval.node) = (yyvsp[0].node); }
+#line 1701 "parser.tab.c"
     break;
 
-  case 36: /* aside_content: aside_item  */
-#line 329 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::ASIDE);
-        node->add_child((yyvsp[0].node));
-        (yyval.node) = node;
-    }
-#line 1619 "parser.tab.c"
+  case 59: /* article_item: formatted_element  */
+#line 216 "parser.y"
+                                                                                { (yyval.node) = (yyvsp[0].node); }
+#line 1707 "parser.tab.c"
     break;
 
-  case 37: /* aside_content: aside_content aside_item  */
-#line 335 "parser.y"
-    {
-        (yyvsp[-1].node)->add_child((yyvsp[0].node));
-        (yyval.node) = (yyvsp[-1].node);
-    }
-#line 1628 "parser.tab.c"
+  case 60: /* aside_item: p_element  */
+#line 218 "parser.y"
+                      { (yyval.node) = (yyvsp[0].node); }
+#line 1713 "parser.tab.c"
     break;
 
-  case 38: /* footer_element: FOOTER_START footer_content FOOTER_END  */
-#line 343 "parser.y"
-    {
-        (yyval.node) = (yyvsp[-1].node);  // footer_content already creates FOOTER node
-    }
-#line 1636 "parser.tab.c"
-    break;
-
-  case 39: /* footer_content: footer_item  */
-#line 350 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::FOOTER);
-        node->add_child((yyvsp[0].node));
-        (yyval.node) = node;
-    }
-#line 1646 "parser.tab.c"
-    break;
-
-  case 40: /* footer_content: footer_content footer_item  */
-#line 356 "parser.y"
-    {
-        (yyvsp[-1].node)->add_child((yyvsp[0].node));
-        (yyval.node) = (yyvsp[-1].node);
-    }
-#line 1655 "parser.tab.c"
-    break;
-
-  case 41: /* footer_item: p_element  */
-#line 363 "parser.y"
-              { (yyval.node) = (yyvsp[0].node); }
-#line 1661 "parser.tab.c"
-    break;
-
-  case 42: /* footer_item: img_element  */
-#line 364 "parser.y"
-                  { (yyval.node) = (yyvsp[0].node); }
-#line 1667 "parser.tab.c"
-    break;
-
-  case 43: /* p_element: P_START mixed_content P_END  */
-#line 369 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::PARAGRAPH);
-        if ((yyvsp[-1].node)) {
-            if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
-                // Transfer children if mixed_content created a paragraph
-                for (auto* child : (yyvsp[-1].node)->children) {
-                    node->add_child(child);
-                }
-                (yyvsp[-1].node)->children.clear();
-                delete (yyvsp[-1].node);
-            } else {
-                node->add_child((yyvsp[-1].node));
-            }
-        }
-        (yyval.node) = node;
-    }
-#line 1688 "parser.tab.c"
-    break;
-
-  case 44: /* heading: H_START mixed_content H_END  */
-#line 389 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::HEADING);
-        node->heading_level = (yyvsp[-2].number);
-        if ((yyvsp[-1].node)) {
-            if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
-                // Transfer children if mixed_content created a paragraph
-                for (auto* child : (yyvsp[-1].node)->children) {
-                    node->add_child(child);
-                }
-                (yyvsp[-1].node)->children.clear();
-                delete (yyvsp[-1].node);
-            } else {
-                node->add_child((yyvsp[-1].node));
-            }
-        }
-        (yyval.node) = node;
-    }
-#line 1710 "parser.tab.c"
-    break;
-
-  case 45: /* list: UL_START list_items UL_END  */
-#line 410 "parser.y"
-    {
-        (yyval.node) = (yyvsp[-1].node);  // list_items already creates a LIST node
-    }
-#line 1718 "parser.tab.c"
-    break;
-
-  case 46: /* list_items: list_item  */
-#line 417 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::LIST);
-        node->add_child((yyvsp[0].node));
-        (yyval.node) = node;
-    }
-#line 1728 "parser.tab.c"
-    break;
-
-  case 47: /* list_items: list_items list_item  */
-#line 423 "parser.y"
-    {
-        (yyvsp[-1].node)->add_child((yyvsp[0].node));
-        (yyval.node) = (yyvsp[-1].node);
-    }
-#line 1737 "parser.tab.c"
-    break;
-
-  case 48: /* list_item: LI_START mixed_content LI_END  */
-#line 431 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::LIST_ITEM);
-        if ((yyvsp[-1].node)) {
-            if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
-                // Transfer children if mixed_content created a paragraph
-                for (auto* child : (yyvsp[-1].node)->children) {
-                    node->add_child(child);
-                }
-                (yyvsp[-1].node)->children.clear();
-                delete (yyvsp[-1].node);
-            } else {
-                node->add_child((yyvsp[-1].node));
-            }
-        }
-        (yyval.node) = node;
-    }
-#line 1758 "parser.tab.c"
-    break;
-
-  case 49: /* link: A_START mixed_content A_END  */
-#line 451 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::LINK);
-        node->attributes = std::string((yyvsp[-2].text));
-        if ((yyvsp[-1].node)) node->add_child((yyvsp[-1].node));
-        free((yyvsp[-2].text));
-        (yyval.node) = node;
-    }
-#line 1770 "parser.tab.c"
-    break;
-
-  case 50: /* img_element: IMG  */
-#line 462 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::IMAGE);
-        node->attributes = std::string((yyvsp[0].text));
-        free((yyvsp[0].text));
-        (yyval.node) = node;
-    }
-#line 1781 "parser.tab.c"
-    break;
-
-  case 51: /* formatted_element: STRONG_START mixed_content STRONG_END  */
-#line 472 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::FORMATTED_TEXT);
-        node->attributes = "type=\"strong\"";
-        if ((yyvsp[-1].node)) {
-            if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
-                // Transfer children if mixed_content created a paragraph
-                for (auto* child : (yyvsp[-1].node)->children) {
-                    node->add_child(child);
-                }
-                (yyvsp[-1].node)->children.clear();
-                delete (yyvsp[-1].node);
-            } else {
-                node->add_child((yyvsp[-1].node));
-            }
-        }
-        (yyval.node) = node;
-    }
-#line 1803 "parser.tab.c"
-    break;
-
-  case 52: /* formatted_element: EM_START mixed_content EM_END  */
-#line 490 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::FORMATTED_TEXT);
-        node->attributes = "type=\"emphasis\"";
-        if ((yyvsp[-1].node)) {
-            if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
-                // Transfer children if mixed_content created a paragraph
-                for (auto* child : (yyvsp[-1].node)->children) {
-                    node->add_child(child);
-                }
-                (yyvsp[-1].node)->children.clear();
-                delete (yyvsp[-1].node);
-            } else {
-                node->add_child((yyvsp[-1].node));
-            }
-        }
-        (yyval.node) = node;
-    }
-#line 1825 "parser.tab.c"
-    break;
-
-  case 53: /* formatted_element: PRE_START mixed_content PRE_END  */
-#line 508 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::FORMATTED_TEXT);
-        node->attributes = "type=\"preformatted\"";
-        if ((yyvsp[-1].node)) {
-            if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
-                // Transfer children if mixed_content created a paragraph
-                for (auto* child : (yyvsp[-1].node)->children) {
-                    node->add_child(child);
-                }
-                (yyvsp[-1].node)->children.clear();
-                delete (yyvsp[-1].node);
-            } else {
-                node->add_child((yyvsp[-1].node));
-            }
-        }
-        (yyval.node) = node;
-    }
-#line 1847 "parser.tab.c"
-    break;
-
-  case 54: /* formatted_element: BLOCKQUOTE_START mixed_content BLOCKQUOTE_END  */
-#line 526 "parser.y"
-    {
-        auto* node = new ASTNode(NodeType::FORMATTED_TEXT);
-        node->attributes = "type=\"blockquote\"";
-        if ((yyvsp[-1].node)) {
-            if ((yyvsp[-1].node)->type == NodeType::PARAGRAPH) {
-                // Transfer children if mixed_content created a paragraph
-                for (auto* child : (yyvsp[-1].node)->children) {
-                    node->add_child(child);
-                }
-                (yyvsp[-1].node)->children.clear();
-                delete (yyvsp[-1].node);
-            } else {
-                node->add_child((yyvsp[-1].node));
-            }
-        }
-        (yyval.node) = node;
-    }
-#line 1869 "parser.tab.c"
-    break;
-
-  case 55: /* article_item: heading  */
-#line 547 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1877 "parser.tab.c"
-    break;
-
-  case 56: /* article_item: p_element  */
-#line 551 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1885 "parser.tab.c"
-    break;
-
-  case 57: /* article_item: formatted_element  */
-#line 555 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1893 "parser.tab.c"
-    break;
-
-  case 58: /* aside_item: p_element  */
-#line 562 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1901 "parser.tab.c"
-    break;
-
-  case 59: /* aside_item: list  */
-#line 566 "parser.y"
-    {
-        (yyval.node) = (yyvsp[0].node);
-    }
-#line 1909 "parser.tab.c"
+  case 61: /* aside_item: list  */
+#line 218 "parser.y"
+                                          { (yyval.node) = (yyvsp[0].node); }
+#line 1719 "parser.tab.c"
     break;
 
 
-#line 1913 "parser.tab.c"
+#line 1723 "parser.tab.c"
 
       default: break;
     }
@@ -2102,50 +1912,25 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 571 "parser.y"
+#line 220 "parser.y"
 
 
 void yyerror(const char* s) {
-    extern int yylineno;
-    extern char* yytext;
-    std::cerr << "Parser error near line " << yylineno 
-              << ": " << s << " at token '" << yytext << "'\n";
+    std::cerr << "Parser error near line " << yylineno << ": " << s << " at token '" << yytext << "'\n";
 }
 
 int main(int argc, char** argv) {
-    if (argc > 1) {
-        if (!(yyin = fopen(argv[1], "r"))) {
-            perror(argv[1]);
-            return 1;
-        }
-    }
-
+    if (argc > 1 && !(yyin = fopen(argv[1], "r"))) { perror(argv[1]); return 1; }
     yyparse();
-
     if (root) {
-        // Write AST to DOM.ast file
         std::ofstream dom_out("DOM.ast");
-        if (!dom_out) {
-            std::cerr << "Failed to open DOM.ast file" << std::endl;
-            return 1;
-        }
-
+        if (!dom_out) { std::cerr << "Failed to open DOM.ast file" << std::endl; return 1; }
         root->print_ast_to_file(dom_out);
         dom_out.close();
-        std::cout << "AST has been written to DOM.ast file" << std::endl;
-
-        // Debug output to console
-        std::cout << "\nDebug output to console:" << std::endl;
+        std::cout << "AST has been written to DOM.ast file\n\nDebug output to console:" << std::endl;
         root->print_ast();
-
         delete root;
-    } else {
-        std::cerr << "No AST was created (root is null)" << std::endl;
-    }
-    
-    if (yyin != stdin) {
-        fclose(yyin);
-    }
-    
+    } else std::cerr << "No AST was created (root is null)" << std::endl;
+    if (yyin != stdin) fclose(yyin);
     return 0;
 }

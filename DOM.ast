@@ -2,7 +2,7 @@ ROOT
   HTML
     HEAD
       TITLE
-        TEXT: "Technology - Bailey-Weber"
+        TEXT: "Travel - Collier, Turner and Williams"
     BODY
       NAV
         LIST
@@ -20,41 +20,41 @@ ROOT
               TEXT: "Contact"
       HEADER
         HEADING (h1)
-          TEXT: "Bailey-Weber - Land"
+          TEXT: "Collier, Turner and Williams - Retail manager"
         HEADING (h2)
-          TEXT: "Technology in Bailey-Weber"
+          TEXT: "Travel in Collier, Turner and Williams"
         PARAGRAPH
-          TEXT: "Require kind start week everything exist. Still four understand pass goal. Onto like morning discover federal according. Detail save security edge. Reach remain usually them ahead piece."
+          TEXT: "Give by sea. Market thus night director. Food federal response child of. Question least offer wind top person."
         HEADING (h3)
-          TEXT: "Technology Trends in 2019"
+          TEXT: "Travel Trends in 2010"
         PARAGRAPH
-          TEXT: "West institution action street. Herself good set little understand."
+          TEXT: "His group east section myself man. Congress improve middle ready."
         HEADING (h4)
-          TEXT: "Technology Insights"
+          TEXT: "Travel Insights"
         PARAGRAPH
-          TEXT: "Old use relate."
+          TEXT: "Win Republican represent standard level. Big store pick page become parent necessary."
         HEADING (h5)
-          TEXT: "Future of Technology"
+          TEXT: "Future of Travel"
         PARAGRAPH
-          TEXT: "Beyond coach popular step help property area. Past bag good with large design. Read care long standard student wear."
+          TEXT: "Agreement scene indicate. We quite factor thank receive. Happy including spring effect part five various."
       SECTION
         ARTICLE
           HEADING (h2)
-            TEXT: "Technology Article: transform best-of-breed e-services"
+            TEXT: "Travel Article: cultivate turn-key systems"
           PARAGRAPH
-            TEXT: "Money ten knowledge after personal for fish. Detail lawyer blue room identify center challenge difference. Team focus effort risk agreement cover these. Choice rest seek."
+            TEXT: "Save concern several research off dark nearly. Large difficult rule."
           PARAGRAPH
             FORMATTED_TEXT [type="strong"]
-              TEXT: "describe"
+              TEXT: "begin"
             TEXT: " and "
             FORMATTED_TEXT [type="emphasis"]
-              TEXT: "arrive"
+              TEXT: "use"
             TEXT: " text formatting."
           PARAGRAPH
             FORMATTED_TEXT [type="preformatted"]
-              TEXT: "Nation note head mother security doctor page agreement process wide."
+              TEXT: "On option traditional hold official treat edge."
           FORMATTED_TEXT [type="blockquote"]
-            TEXT: "'Education free positive subject grow nor start PM imagine.' - Kenneth Vazquez"
+            TEXT: "'Eat market step thousand not most herself power wish front series keep service.' - Mary Villa"
       ASIDE
         PARAGRAPH
           TEXT: "Related links:"

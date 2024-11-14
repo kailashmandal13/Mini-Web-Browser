@@ -1,12 +1,13 @@
 #include "ast.hpp"
+#include <iostream>
 
-ASTNode::ASTNode(NodeType t) 
-    : type(t), heading_level(0) {}
+ASTNode::ASTNode(NodeType t) : type(t), heading_level(0) {}
 
 ASTNode::~ASTNode() {
-    for (ASTNode* child : children) {
+    for (auto* child : children) {
         delete child;
     }
+    children.clear();
 }
 
 void ASTNode::add_child(ASTNode* child) {
@@ -16,7 +17,7 @@ void ASTNode::add_child(ASTNode* child) {
 }
 
 std::string ASTNode::get_node_type_str(NodeType type) {
-    switch(type) {
+    switch (type) {
         case NodeType::ROOT: return "ROOT";
         case NodeType::HTML: return "HTML";
         case NodeType::HEAD: return "HEAD";
@@ -36,107 +37,70 @@ std::string ASTNode::get_node_type_str(NodeType type) {
         case NodeType::IMAGE: return "IMAGE";
         case NodeType::TEXT: return "TEXT";
         case NodeType::FORMATTED_TEXT: return "FORMATTED_TEXT";
+        case NodeType::CONTAINER: return "CONTAINER";
         default: return "UNKNOWN";
     }
 }
 
 void ASTNode::print_ast_to_file(std::ofstream& out, int depth) const {
     std::string indent(depth * 2, ' ');
-    
     out << indent << get_node_type_str(type);
     
-    if (heading_level > 0) {
+    if (type == NodeType::HEADING) {
         out << " (h" << heading_level << ")";
     }
-    
-    if (!content.empty()) {
-        out << ": \"" << content << "\"";
-    }
-    
     if (!attributes.empty()) {
         out << " [" << attributes << "]";
     }
-    
+    if (!content.empty()) {
+        out << ": \"" << content << "\"";
+    }
     out << "\n";
-    
+
     for (const auto* child : children) {
-        child->print_ast_to_file(out, depth + 1);
+        if (child) {
+            child->print_ast_to_file(out, depth + 1);
+        }
     }
 }
 
 void ASTNode::print_ast(int depth) const {
-    for (int i = 0; i < depth; i++) {
-        std::cout << "  ";
-    }
-
-    std::cout << get_node_type_str(type);
-
-    if (heading_level > 0) {
+    std::string indent(depth * 2, ' ');
+    std::cout << indent << get_node_type_str(type);
+    
+    if (type == NodeType::HEADING) {
         std::cout << " (h" << heading_level << ")";
-    }
-    if (!content.empty()) {
-        std::cout << ": \"" << content << "\"";
     }
     if (!attributes.empty()) {
         std::cout << " [" << attributes << "]";
     }
+    if (!content.empty()) {
+        std::cout << ": \"" << content << "\"";
+    }
     std::cout << "\n";
 
     for (const auto* child : children) {
-        child->print_ast(depth + 1);
+        if (child) {
+            child->print_ast(depth + 1);
+        }
     }
 }
 
 std::string ASTNode::get_dom_node_str() const {
-    switch(type) {
-        case NodeType::ROOT: return "document";
-        case NodeType::HTML: return "html";
-        case NodeType::HEAD: return "head";
-        case NodeType::TITLE: return "title";
-        case NodeType::BODY: return "body";
-        case NodeType::NAV: return "nav";
-        case NodeType::HEADER: return "header";
-        case NodeType::SECTION: return "section";
-        case NodeType::ARTICLE: return "article";
-        case NodeType::ASIDE: return "aside";
-        case NodeType::FOOTER: return "footer";
-        case NodeType::HEADING: return "h" + std::to_string(heading_level);
-        case NodeType::PARAGRAPH: return "p";
-        case NodeType::LIST: return "ul";  // or "ol" depending on context
-        case NodeType::LIST_ITEM: return "li";
-        case NodeType::LINK: return "a";
-        case NodeType::IMAGE: return "img";
-        case NodeType::TEXT: return "#text";
-        case NodeType::FORMATTED_TEXT: return "formatted";
-        default: return "unknown";
-    }
+    return get_node_type_str(type);
 }
 
 void ASTNode::print_dom(std::ofstream& out, int depth) const {
-    // Indent based on depth
     std::string indent(depth * 2, ' ');
-    
-    // Print node type
-    out << indent << "<" << get_dom_node_str();
-    
-    // Print attributes if any
-    if (!attributes.empty()) {
-        out << " " << attributes;
+    out << indent << get_dom_node_str();
+    if (!content.empty()) {
+        out << ": " << content;
     }
+    out << "\n";
     
-    // For text nodes, print content inline
-    if (type == NodeType::TEXT) {
-        out << ">" << content << "</" << get_dom_node_str() << ">\n";
-        return;
-    }
-    
-    out << ">\n";
-    
-    // Print children
     for (const auto* child : children) {
-        child->print_dom(out, depth + 1);
+        if (child) {
+            child->print_dom(out, depth + 1);
+        }
     }
-    
-    // Close tag
-    out << indent << "</" << get_dom_node_str() << ">\n";
 } 

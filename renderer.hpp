@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QDesktopServices>
 #include <QUrl>
+#include <iostream>
 #include "ast.hpp"
 
 class HTMLRenderer : public QWidget {
@@ -37,4 +38,8 @@ private:
     void renderImage(QPainter& painter, int& yPos, const ASTNode* node, int indent = 0);
     void renderFormattedText(QPainter& painter, int& yPos, const ASTNode* node, int indent = 0);
     void renderParagraph(QPainter& painter, int& yPos, const ASTNode* node, int indent = 0);
+
+    void printNodeType(const ASTNode* node) {
+        std::cout << "Node type: " << static_cast<int>(node->type) << std::endl;
+    }
 }; 

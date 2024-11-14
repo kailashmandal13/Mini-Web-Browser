@@ -67,24 +67,55 @@ void HTMLRenderer::renderHeading(QPainter& painter, int& yPos, const std::string
 void HTMLRenderer::renderList(QPainter& painter, int& yPos, const ASTNode* node, int depth) {
     if (!node || node->children.empty()) return;
     
+    // Debug print
+    std::cout << "Rendering list with " << node->children.size() << " children" << std::endl;
+    printNodeType(node);
+    
+    yPos += LINE_HEIGHT; // Space before list
     int indent = depth * 20;
+    
     for (const auto* item : node->children) {
         if (!item) continue;
         
-        if (item->type == NodeType::LIST_ITEM) {
-            int bulletY = yPos - 5;
-            painter.setBrush(Qt::black);
-            painter.drawEllipse(QPoint(MARGIN_LEFT + indent + 5, bulletY), 2, 2);
-            
-            if (!item->children.empty()) {
-                for (const auto* child : item->children) {
-                    if (child) {
-                        renderNode(child, painter, yPos, depth + 1);
-                    }
+        // Debug print
+        std::cout << "List item: " << std::endl;
+        printNodeType(item);
+        
+        // Calculate positions
+        int bulletX = MARGIN_LEFT + indent + 5;  // Bullet point position
+        int bulletY = yPos - 5;  // Align with text baseline
+        int textIndent = indent + 20;  // Text position after bullet
+        
+        // Draw bullet point
+        painter.save();
+        painter.setBrush(Qt::black);
+        painter.setPen(Qt::black);
+        painter.drawEllipse(QPoint(bulletX, bulletY), 3, 3);
+        painter.restore();
+        
+        // Handle the content
+        if (!item->children.empty()) {
+            for (const auto* child : item->children) {
+                if (!child) continue;
+                
+                // Debug print
+                std::cout << "List item child: " << std::endl;
+                printNodeType(child);
+                
+                if (child->type == NodeType::TEXT) {
+                    renderText(painter, yPos, child->content, textIndent);
+                } else if (child->type == NodeType::LINK) {
+                    renderLink(painter, yPos, child, textIndent);
+                } else {
+                    renderNode(child, painter, yPos, depth + 1);
                 }
             }
         }
+        
+        yPos += LINE_HEIGHT;  // Space after each item
     }
+    
+    yPos += LINE_HEIGHT / 2;  // Space after list
 }
 
 void HTMLRenderer::renderLink(QPainter& painter, int& yPos, const ASTNode* node, int indent) {
@@ -254,9 +285,15 @@ void HTMLRenderer::renderNode(const ASTNode* node, QPainter& painter, int& yPos,
     if (!node) return;
 
     try {
-        int currentYPos = yPos;
+        // Debug print
+        std::cout << "Rendering node: " << std::endl;
+        printNodeType(node);
         
         switch (node->type) {
+            case NodeType::LIST:  // Make sure this case exists
+                renderList(painter, yPos, node, depth);
+                break;
+                
             case NodeType::TEXT:
                 if (!node->content.empty()) {
                     renderText(painter, yPos, node->content, depth * 20);
@@ -293,9 +330,6 @@ void HTMLRenderer::renderNode(const ASTNode* node, QPainter& painter, int& yPos,
                 }
                 break;
         }
-        
-        yPos = std::max(yPos, currentYPos + static_cast<int>(LINE_HEIGHT * 1.5));
-        
     } catch (const std::exception& e) {
         std::cerr << "Error rendering node: " << e.what() << std::endl;
     }

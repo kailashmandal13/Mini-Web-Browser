@@ -2,7 +2,7 @@
 #include <iostream>
 
 HTMLRenderer::HTMLRenderer(ASTNode* root, QWidget* parent) 
-    : QWidget(parent), rootNode(root) {
+    : QWidget(parent), rootNode(root), totalHeight(0) {
     setMinimumSize(800, 600);
     setAutoFillBackground(true);
     QPalette pal = palette();
@@ -12,9 +12,24 @@ HTMLRenderer::HTMLRenderer(ASTNode* root, QWidget* parent)
 
 void HTMLRenderer::paintEvent(QPaintEvent*) {
     QPainter painter(this);
-    int yPos = MARGIN_TOP;
-    clickableAreas.clear(); // Clear previous clickable areas
+    painter.setRenderHint(QPainter::Antialiasing);
     
+    // First pass: calculate total height
+    int calculateYPos = MARGIN_TOP;
+    clickableAreas.clear();
+    
+    if (rootNode) {
+        renderNode(rootNode, painter, calculateYPos);
+    }
+    
+    // Set the total height with extra padding
+    totalHeight = calculateYPos + MARGIN_TOP + 100;  // Increased padding
+    
+    // Set minimum size based on content
+    setMinimumHeight(totalHeight);
+    
+    // Second pass: actual rendering
+    int yPos = MARGIN_TOP;
     if (rootNode) {
         renderNode(rootNode, painter, yPos);
     }
@@ -369,4 +384,12 @@ void HTMLRenderer::renderImage(QPainter& painter, int& yPos, const ASTNode* node
             }
         }
     }
+}
+
+QSize HTMLRenderer::sizeHint() const {
+    return QSize(800, totalHeight);
+}
+
+QSize HTMLRenderer::minimumSizeHint() const {
+    return QSize(400, std::min(600, totalHeight));
 } 

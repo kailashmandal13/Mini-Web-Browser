@@ -12,6 +12,8 @@ class HTMLRenderer : public QWidget {
     Q_OBJECT
 public:
     explicit HTMLRenderer(ASTNode* root, QWidget* parent = nullptr);
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -29,6 +31,8 @@ private:
         QString url;
     };
     std::vector<ClickableArea> clickableAreas;
+    
+    int totalHeight;
     
     void renderNode(const ASTNode* node, QPainter& painter, int& yPos, int depth = 0);
     void renderText(QPainter& painter, int& yPos, const std::string& text, int indent = 0);

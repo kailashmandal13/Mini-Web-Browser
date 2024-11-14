@@ -1,51 +1,24 @@
-# Makefile for HTML parser
+CC = gcc
+CFLAGS = -Wall -g -DYYDEBUG=1
 
-# Compiler and flags
-CXX = g++
-CXXFLAGS = -Wall -g
-
-# Targets
 TARGET = html_parser
+OBJS = ast.o lex.yy.o parser.tab.o
 
-# Files
-FLEX_FILE = lexer.l
-BISON_FILE = parser.y
-AST_SRC = AST.cpp
-AST_OBJ = AST.o
-BISON_C_FILE = parser.tab.c
-BISON_H_FILE = parser.tab.h
-LEX_C_FILE = lex.yy.c
-
-# Objects
-OBJECTS = parser.tab.o lex.yy.o $(AST_OBJ)
-
-# Rules
 all: $(TARGET)
 
-# Generate parser files from Bison
-parser.tab.c parser.tab.h: $(BISON_FILE)
-	bison -d $(BISON_FILE)
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) -o $(TARGET) -lfl
 
-# Generate lexer file from Flex
-lex.yy.c: $(FLEX_FILE)
-	flex $(FLEX_FILE)
+lex.yy.c: lexer.l parser.tab.h
+	flex lexer.l
 
-# Compile AST source file
-$(AST_OBJ): $(AST_SRC)
-	$(CXX) -c $(AST_SRC) $(CXXFLAGS)
+parser.tab.c parser.tab.h: parser.y
+	bison -d parser.y
 
-# Compile Bison output file
-parser.tab.o: parser.tab.c parser.tab.h
-	$(CXX) -c parser.tab.c $(CXXFLAGS)
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# Compile Flex output file
-lex.yy.o: lex.yy.c
-	$(CXX) -c lex.yy.c $(CXXFLAGS)
-
-# Link all objects to create the executable
-$(TARGET): $(OBJECTS)
-	$(CXX) -o $(TARGET) $(OBJECTS)
-
-# Clean up build files
 clean:
-	rm -f *.o parser.tab.* lex.yy.c $(TARGET)
+	rm -f $(TARGET) $(OBJS) lex.yy.c parser.tab.c parser.tab.h
+
+.PHONY: all clean

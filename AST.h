@@ -1,47 +1,46 @@
 #ifndef AST_H
 #define AST_H
 
-#include <string>
-#include <vector>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-// Abstract base class for AST nodes
-class ASTNode {
-public:
-    virtual ~ASTNode() = default; // Default destructor
-    virtual std::string getName() const = 0; // Get the name of the node
-    virtual void addChild(ASTNode* child) = 0; // Add a child node
-};
+typedef enum {
+    NODE_ROOT,
+    NODE_HTML,
+    NODE_HEAD,
+    NODE_TITLE,
+    NODE_BODY,
+    NODE_NAV,
+    NODE_HEADER,
+    NODE_SECTION,
+    NODE_ARTICLE,
+    NODE_ASIDE,
+    NODE_FOOTER,
+    NODE_HEADING,
+    NODE_PARAGRAPH,
+    NODE_LIST,
+    NODE_LIST_ITEM,
+    NODE_LINK,
+    NODE_IMAGE,
+    NODE_TEXT,
+    NODE_FORMATTED_TEXT
+} NodeType;
 
-// Class for element nodes
-class ElementNode : public ASTNode {
-public:
-    std::string name; // Name of the element
-    std::vector<ASTNode*> children; // Children of this element
+typedef struct ASTNode {
+    NodeType type;
+    char* content;
+    char* attributes;
+    int heading_level;
+    struct ASTNode** children;
+    int num_children;
+    int max_children;
+} ASTNode;
 
-    ElementNode(const std::string& n) : name(n) {} // Constructor
+ASTNode* create_node(NodeType type);
+void add_child(ASTNode* parent, ASTNode* child);
+void free_node(ASTNode* node);
+void print_ast(ASTNode* node, int depth);
+void print_ast_to_file(FILE* fp, ASTNode* node, int depth);
 
-    std::string getName() const override { return name; } // Override getName
-
-    void addChild(ASTNode* child) override {
-        children.push_back(child); // Add child to the vector
-    }
-};
-
-// Class for text nodes
-class TextNode : public ASTNode {
-public:
-    std::string text; // Text content
-
-    TextNode(const std::string& t) : text(t) {} // Constructor
-
-    std::string getName() const override { return "Text"; } // Override getName
-
-    void addChild(ASTNode* child) override {
-        // Text nodes do not have children, so do nothing
-    }
-};
-
-// Function to print the AST
-void printAST(ASTNode* node, int depth);
-
-#endif // AST_H
+#endif

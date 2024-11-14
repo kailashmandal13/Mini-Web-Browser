@@ -54,9 +54,48 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    TEXT = 258,                    /* TEXT  */
-    OPEN_TAG = 259,                /* OPEN_TAG  */
-    CLOSE_TAG = 260                /* CLOSE_TAG  */
+    HTML_START = 258,              /* HTML_START  */
+    HTML_END = 259,                /* HTML_END  */
+    HEAD_START = 260,              /* HEAD_START  */
+    HEAD_END = 261,                /* HEAD_END  */
+    TITLE_START = 262,             /* TITLE_START  */
+    TITLE_END = 263,               /* TITLE_END  */
+    BODY_START = 264,              /* BODY_START  */
+    BODY_END = 265,                /* BODY_END  */
+    NAV_START = 266,               /* NAV_START  */
+    NAV_END = 267,                 /* NAV_END  */
+    HEADER_START = 268,            /* HEADER_START  */
+    HEADER_END = 269,              /* HEADER_END  */
+    H_START = 270,                 /* H_START  */
+    H_END = 271,                   /* H_END  */
+    P_START = 272,                 /* P_START  */
+    P_END = 273,                   /* P_END  */
+    SECTION_START = 274,           /* SECTION_START  */
+    SECTION_END = 275,             /* SECTION_END  */
+    ARTICLE_START = 276,           /* ARTICLE_START  */
+    ARTICLE_END = 277,             /* ARTICLE_END  */
+    ASIDE_START = 278,             /* ASIDE_START  */
+    ASIDE_END = 279,               /* ASIDE_END  */
+    FOOTER_START = 280,            /* FOOTER_START  */
+    FOOTER_END = 281,              /* FOOTER_END  */
+    UL_START = 282,                /* UL_START  */
+    UL_END = 283,                  /* UL_END  */
+    OL_START = 284,                /* OL_START  */
+    OL_END = 285,                  /* OL_END  */
+    LI_START = 286,                /* LI_START  */
+    LI_END = 287,                  /* LI_END  */
+    STRONG_START = 288,            /* STRONG_START  */
+    STRONG_END = 289,              /* STRONG_END  */
+    EM_START = 290,                /* EM_START  */
+    EM_END = 291,                  /* EM_END  */
+    PRE_START = 292,               /* PRE_START  */
+    PRE_END = 293,                 /* PRE_END  */
+    BLOCKQUOTE_START = 294,        /* BLOCKQUOTE_START  */
+    BLOCKQUOTE_END = 295,          /* BLOCKQUOTE_END  */
+    A_START = 296,                 /* A_START  */
+    A_END = 297,                   /* A_END  */
+    IMG = 298,                     /* IMG  */
+    TEXT = 299                     /* TEXT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -65,12 +104,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 16 "parser.y"
+#line 15 "parser.y"
 
-    char* str;
-    ASTNode* node;
+    char* sval;
+    int ival;
+    struct ASTNode* node;
 
-#line 74 "parser.tab.h"
+#line 114 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

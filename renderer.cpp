@@ -151,16 +151,6 @@ void HTMLRenderer::renderFormattedText(QPainter& painter, int& yPos, const ASTNo
         indent += 40;  // Increased indentation for blockquote
     }
     
-    // Draw a vertical line for blockquote
-    if (isBlockquote) {
-        QPen blockquotePen(Qt::gray);
-        blockquotePen.setWidth(2);
-        painter.setPen(blockquotePen);
-        painter.drawLine(MARGIN_LEFT + indent - 10, yPos - 15, 
-                        MARGIN_LEFT + indent - 10, yPos + 20);
-        painter.setPen(originalPen);
-    }
-    
     // Handle text content
     if (!node->content.empty()) {
         painter.drawText(MARGIN_LEFT + indent, yPos, QString::fromStdString(node->content));

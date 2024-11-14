@@ -1,147 +1,224 @@
 %{
-#include <cstdio>
 #include <string>
-#include "AST.h"
+#include <cstring>
+#include <iostream>
+#include <fstream>
+#include "ast.hpp"
 
-std::shared_ptr<HTMLNode> root;
-
-void yyerror(const char* s) {
-    fprintf(stderr, "Parse error: %s\n", s);
-}
-
-#define YYSTYPE std::shared_ptr<HTMLNode>
+extern FILE* yyin;
+extern int yylex(void);
+extern char* yytext;
+void yyerror(const char* s);
+extern int yylineno;
+ASTNode* root = nullptr;
+#define YYDEBUG 1
 %}
 
-// Define tokens
-%token HTML_TAG HTML_TAG_CLOSE
-%token HEAD_TAG HEAD_TAG_CLOSE
-%token TITLE_TAG TITLE_TAG_CLOSE
-%token BODY_TAG BODY_TAG_CLOSE
-%token NAV_TAG NAV_TAG_CLOSE
-%token UL_TAG UL_TAG_CLOSE
-%token LI_TAG LI_TAG_CLOSE
-%token A_TAG A_TAG_CLOSE
-%token HEADER_TAG HEADER_TAG_CLOSE
-%token H1_TAG H1_TAG_CLOSE
-%token H2_TAG H2_TAG_CLOSE
-%token H3_TAG H3_TAG_CLOSE
-%token H4_TAG H4_TAG_CLOSE
-%token H5_TAG H5_TAG_CLOSE
-%token SECTION_TAG SECTION_TAG_CLOSE
-%token ARTICLE_TAG ARTICLE_TAG_CLOSE
-%token P_TAG P_TAG_CLOSE
-%token STRONG_TAG STRONG_TAG_CLOSE
-%token EM_TAG EM_TAG_CLOSE
-%token PRE_TAG PRE_TAG_CLOSE
-%token BLOCKQUOTE_TAG BLOCKQUOTE_TAG_CLOSE
-%token ASIDE_TAG ASIDE_TAG_CLOSE
-%token FOOTER_TAG FOOTER_TAG_CLOSE
-%token IMG_TAG
-%token TEXT_CONTENT
+%union { char* text; int number; ASTNode* node; }
 
-%start html
+%token HTML_START HTML_END HEAD_START HEAD_END TITLE_START TITLE_END
+%token BODY_START BODY_END NAV_START NAV_END HEADER_START HEADER_END
+%token <number> H_START H_END
+%token P_START P_END SECTION_START SECTION_END ARTICLE_START ARTICLE_END 
+%token ASIDE_START ASIDE_END FOOTER_START FOOTER_END UL_START UL_END OL_START OL_END
+%token LI_START LI_END STRONG_START STRONG_END EM_START EM_END
+%token PRE_START PRE_END BLOCKQUOTE_START BLOCKQUOTE_END
+%token <text> A_START A_END IMG TEXT DOCTYPE
+
+%type <node> document html html_content head_content body_content body_elements body_element
+%type <node> nav_element header_element section_element article_element aside_element footer_element
+%type <node> p_element heading list list_items list_item link img_element formatted_element mixed_content
+%type <node> text_content header_content header_item section_content article_content aside_content
+%type <node> footer_content footer_item article_item aside_item title
 
 %%
 
-// Grammar rules for the DOM structure
+document: DOCTYPE html { auto* node = new ASTNode(NodeType::ROOT); if ($2) node->add_child($2); root = node; $$ = node; };
 
-html:
-    HTML_TAG head body HTML_TAG_CLOSE
-    {
-        root = std::make_shared<ElementNode>("html");
-        root->addChild($2);
-        root->addChild($3);
-    }
-;
+html: HTML_START html_content HTML_END {
+    auto* node = new ASTNode(NodeType::HTML);
+    if ($2) { for (auto* child : $2->children) node->add_child(child); $2->children.clear(); delete $2; }
+    $$ = node;
+};
 
-head:
-    HEAD_TAG title HEAD_TAG_CLOSE
-    {
-        auto headNode = std::make_shared<ElementNode>("head");
-        headNode->addChild($2);
-        $$ = headNode;
-    }
-;
+html_content: head_content body_content {
+    auto* node = new ASTNode(NodeType::CONTAINER);
+    if ($1) node->add_child($1); if ($2) node->add_child($2); $$ = node;
+};
 
-title:
-    TITLE_TAG TEXT_CONTENT TITLE_TAG_CLOSE
-    {
-        auto titleNode = std::make_shared<ElementNode>("title");
-        titleNode->addChild(std::make_shared<TextNode>($2));
-        $$ = titleNode;
-    }
-;
+head_content: HEAD_START title HEAD_END { auto* node = new ASTNode(NodeType::HEAD); if ($2) node->add_child($2); $$ = node; };
 
-body:
-    BODY_TAG elements BODY_TAG_CLOSE
-    {
-        auto bodyNode = std::make_shared<ElementNode>("body");
-        bodyNode->addChild($2);
-        $$ = bodyNode;
-    }
-;
+title: TITLE_START TEXT TITLE_END {
+    auto* node = new ASTNode(NodeType::TITLE); auto* text_node = new ASTNode(NodeType::TEXT);
+    text_node->content = std::string($2); free($2); node->add_child(text_node); $$ = node;
+};
 
-elements:
-    element elements
-    {
-        $$ = $2;
-        $$->addChild($1);
-    }
-    |
-    /* empty */
-;
+text_content: TEXT { auto* node = new ASTNode(NodeType::TEXT); node->content = std::string($1); free($1); $$ = node; };
 
-element:
-    NAV_TAG nav_content NAV_TAG_CLOSE
-    {
-        auto navNode = std::make_shared<ElementNode>("nav");
-        navNode->addChild($2);
-        $$ = navNode;
+mixed_content: text_content { $$ = $1; } 
+    | formatted_element { $$ = $1; }
+    | link { $$ = $1; }
+    | mixed_content text_content {
+        if ($1->type == NodeType::PARAGRAPH) { $1->add_child($2); $$ = $1; }
+        else { auto* node = new ASTNode(NodeType::PARAGRAPH); node->add_child($1); node->add_child($2); $$ = node; }
     }
-    | HEADER_TAG header_content HEADER_TAG_CLOSE
-    {
-        auto headerNode = std::make_shared<ElementNode>("header");
-        headerNode->addChild($2);
-        $$ = headerNode;
+    | mixed_content formatted_element {
+        if ($1->type == NodeType::PARAGRAPH) { $1->add_child($2); $$ = $1; }
+        else { auto* node = new ASTNode(NodeType::PARAGRAPH); node->add_child($1); node->add_child($2); $$ = node; }
     }
-    | P_TAG TEXT_CONTENT P_TAG_CLOSE
-    {
-        auto pNode = std::make_shared<ElementNode>("p");
-        pNode->addChild(std::make_shared<TextNode>($2));
-        $$ = pNode;
-    }
-;
+    | mixed_content link {
+        auto* node = new ASTNode(NodeType::PARAGRAPH);
+        if ($1) node->add_child($1); if ($2) node->add_child($2); $$ = node;
+    };
 
-nav_content:
-    UL_TAG ul_content UL_TAG_CLOSE { $$ = $2; }
-;
-
-ul_content:
-    LI_TAG a_content LI_TAG_CLOSE ul_content { $$ = $4; $$->addChild($2); }
-    | /* empty */
-;
-
-a_content:
-    A_TAG TEXT_CONTENT A_TAG_CLOSE
-    {
-        auto aNode = std::make_shared<ElementNode>("a");
-        aNode->addChild(std::make_shared<TextNode>($2));
-        $$ = aNode;
+body_content: BODY_START body_elements BODY_END {
+    auto* node = new ASTNode(NodeType::BODY);
+    if ($2) {
+        if ($2->type == NodeType::BODY) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
     }
-;
+    $$ = node;
+};
 
-header_content:
-    H1_TAG TEXT_CONTENT H1_TAG_CLOSE
-    {
-        auto h1Node = std::make_shared<ElementNode>("h1");
-        h1Node->addChild(std::make_shared<TextNode>($2));
-        $$ = h1Node;
+body_elements: body_element { auto* node = new ASTNode(NodeType::BODY); node->add_child($1); $$ = node; } 
+    | body_elements body_element { $1->add_child($2); $$ = $1; };
+
+body_element: nav_element { $$ = $1; } | header_element { $$ = $1; } | section_element { $$ = $1; } 
+    | aside_element { $$ = $1; } | footer_element { $$ = $1; } | list { $$ = $1; } | p_element { $$ = $1; };
+
+nav_element: NAV_START list NAV_END { auto* node = new ASTNode(NodeType::NAV); if ($2) node->add_child($2); $$ = node; } 
+    | NAV_START mixed_content NAV_END { auto* node = new ASTNode(NodeType::NAV); if ($2) node->add_child($2); $$ = node; };
+
+header_element: HEADER_START header_content HEADER_END {
+    auto* node = new ASTNode(NodeType::HEADER);
+    if ($2) { for (auto* child : $2->children) node->add_child(child); $2->children.clear(); delete $2; }
+    $$ = node;
+};
+
+header_content: header_item { auto* node = new ASTNode(NodeType::HEADER); node->add_child($1); $$ = node; } 
+    | header_content header_item { $1->add_child($2); $$ = $1; };
+
+header_item: heading { $$ = $1; } | p_element { $$ = $1; };
+
+section_element: SECTION_START section_content SECTION_END { 
+    auto* node = new ASTNode(NodeType::SECTION); if ($2) node->add_child($2); $$ = node; 
+};
+
+section_content: article_element { $$ = $1; } 
+    | section_content article_element { if (!$1) $$ = $2; else { $1->add_child($2); $$ = $1; } };
+
+article_element: ARTICLE_START article_content ARTICLE_END {
+    auto* node = new ASTNode(NodeType::ARTICLE);
+    if ($2) { for (auto* child : $2->children) node->add_child(child); $2->children.clear(); delete $2; }
+    $$ = node;
+};
+
+article_content: article_item { auto* node = new ASTNode(NodeType::ARTICLE); node->add_child($1); $$ = node; } 
+    | article_content article_item { $1->add_child($2); $$ = $1; };
+
+aside_element: ASIDE_START aside_content ASIDE_END { $$ = $2; };
+
+aside_content: aside_item { auto* node = new ASTNode(NodeType::ASIDE); node->add_child($1); $$ = node; } 
+    | aside_content aside_item { $1->add_child($2); $$ = $1; };
+
+footer_element: FOOTER_START footer_content FOOTER_END { $$ = $2; };
+
+footer_content: footer_item { auto* node = new ASTNode(NodeType::FOOTER); node->add_child($1); $$ = node; } 
+    | footer_content footer_item { $1->add_child($2); $$ = $1; };
+
+footer_item: p_element { $$ = $1; } | img_element { $$ = $1; };
+
+p_element: P_START mixed_content P_END {
+    auto* node = new ASTNode(NodeType::PARAGRAPH);
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
     }
-;
+    $$ = node;
+};
+
+heading: H_START mixed_content H_END {
+    auto* node = new ASTNode(NodeType::HEADING); node->heading_level = $1;
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
+};
+
+list: UL_START list_items UL_END { $$ = $2; };
+
+list_items: list_item { auto* node = new ASTNode(NodeType::LIST); node->add_child($1); $$ = node; } 
+    | list_items list_item { $1->add_child($2); $$ = $1; };
+
+list_item: LI_START mixed_content LI_END {
+    auto* node = new ASTNode(NodeType::LIST_ITEM);
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
+};
+
+link: A_START mixed_content A_END {
+    auto* node = new ASTNode(NodeType::LINK); node->attributes = std::string($1);
+    if ($2) node->add_child($2); free($1); $$ = node;
+};
+
+img_element: IMG { auto* node = new ASTNode(NodeType::IMAGE); node->attributes = std::string($1); free($1); $$ = node; };
+
+formatted_element: STRONG_START mixed_content STRONG_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT); node->attributes = "type=\"strong\"";
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
+} | EM_START mixed_content EM_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT); node->attributes = "type=\"emphasis\"";
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
+} | PRE_START mixed_content PRE_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT); node->attributes = "type=\"preformatted\"";
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
+} | BLOCKQUOTE_START mixed_content BLOCKQUOTE_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT); node->attributes = "type=\"blockquote\"";
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
+};
+
+article_item: heading { $$ = $1; } | p_element { $$ = $1; } | formatted_element { $$ = $1; };
+
+aside_item: p_element { $$ = $1; } | list { $$ = $1; };
 
 %%
 
-int main(int argc, char** argv) {
-    yyparse();
-    return 0;
+void yyerror(const char* s) {
+    std::cerr << "Parser error near line " << yylineno << ": " << s << " at token '" << yytext << "'\n";
 }

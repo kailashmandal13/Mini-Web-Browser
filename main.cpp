@@ -1,16 +1,27 @@
+#include <QApplication>
 #include <iostream>
-#include "AST.h"
-#include "parser.tab.h"  // Bison-generated header
-extern int yyparse();     // Declaration of Bison's parsing function
-extern std::shared_ptr<HTMLNode> root; // Root node from parser
+#include "parser.hpp"
+#include "renderer.hpp"
 
-int main() {
-    // Start parsing the input HTML
-    if (yyparse() == 0) {  // yyparse() returns 0 on success
-        std::cout << "Parsed HTML DOM Tree:" << std::endl;
-        root->print();  // Print the parsed DOM structure
-    } else {
-        std::cerr << "Failed to parse HTML." << std::endl;
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
+    
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <html_file>" << std::endl;
+        return 1;
     }
-    return 0;
-}
+
+    ASTNode* root = parse_html_file(argv[1]);
+    
+    if (root) {
+        HTMLRenderer* renderer = new HTMLRenderer(root);
+        renderer->show();
+        
+        int result = app.exec();
+        delete root;
+        return result;
+    }
+    
+    std::cerr << "No AST was created (root is null)" << std::endl;
+    return 1;
+} 

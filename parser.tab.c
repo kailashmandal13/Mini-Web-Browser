@@ -1918,19 +1918,3 @@ yyreturnlab:
 void yyerror(const char* s) {
     std::cerr << "Parser error near line " << yylineno << ": " << s << " at token '" << yytext << "'\n";
 }
-
-int main(int argc, char** argv) {
-    if (argc > 1 && !(yyin = fopen(argv[1], "r"))) { perror(argv[1]); return 1; }
-    yyparse();
-    if (root) {
-        std::ofstream dom_out("DOM.ast");
-        if (!dom_out) { std::cerr << "Failed to open DOM.ast file" << std::endl; return 1; }
-        root->print_ast_to_file(dom_out);
-        dom_out.close();
-        std::cout << "AST has been written to DOM.ast file\n\nDebug output to console:" << std::endl;
-        root->print_ast();
-        delete root;
-    } else std::cerr << "No AST was created (root is null)" << std::endl;
-    if (yyin != stdin) fclose(yyin);
-    return 0;
-}

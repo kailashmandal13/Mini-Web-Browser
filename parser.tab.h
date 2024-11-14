@@ -95,7 +95,8 @@ extern int yydebug;
     A_START = 296,                 /* A_START  */
     A_END = 297,                   /* A_END  */
     IMG = 298,                     /* IMG  */
-    TEXT = 299                     /* TEXT  */
+    TEXT = 299,                    /* TEXT  */
+    DOCTYPE = 300                  /* DOCTYPE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -104,13 +105,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 15 "parser.y"
+#line 18 "parser.y"
 
-    char* sval;
-    int ival;
-    struct ASTNode* node;
+    char* text;
+    int number;
+    ASTNode* node;
 
-#line 114 "parser.tab.h"
+#line 115 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

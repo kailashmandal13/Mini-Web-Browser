@@ -55,6 +55,16 @@
 "<a "[^>]*">"      { yylval.text = strdup(yytext); return A_START; }
 "</a>"             { return A_END; }
 "<img "[^>]*">"    { yylval.text = strdup(yytext); return IMG; }
+"<ol>"             { return OL_START; }
+"</ol>"            { return OL_END; }
+"<li>"             { return LI_START; }
+"</li>"            { return LI_END; }
+"<code>"           { return CODE_START; }
+"</code>"          { return CODE_END; }
+"<small>"          { return SMALL_START; }
+"</small>"         { return SMALL_END; }
+"<u>"              { return U_START; }
+"</u>"             { return U_END; }
 
 [^<>]+             { yylval.text = strdup(yytext); return TEXT; }
 

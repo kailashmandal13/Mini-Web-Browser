@@ -1,8 +1,9 @@
 #include "renderer.hpp"
-#include <iostream>
+#include <QDebug>
 
 HTMLRenderer::HTMLRenderer(ASTNode* root, QWidget* parent) 
     : QWidget(parent), rootNode(root), totalHeight(0) {
+    qDebug() << "Creating HTMLRenderer with root node:" << (root ? "valid" : "null");
     setMinimumSize(800, 600);
     setAutoFillBackground(true);
     QPalette pal = palette();
@@ -14,123 +15,116 @@ void HTMLRenderer::paintEvent(QPaintEvent*) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     
+    // Set default font
+    QFont defaultFont("Arial", 12);
+    painter.setFont(defaultFont);
+    
+    // Set default text color
+    painter.setPen(Qt::black);
+    
     // First pass: calculate total height
-    int calculateYPos = MARGIN_TOP;
+    int yPos = MARGIN_TOP;
     clickableAreas.clear();
     
     if (rootNode) {
-        renderNode(rootNode, painter, calculateYPos);
+        renderNode(rootNode, painter, yPos, 0);
     }
     
     // Set the total height with extra padding
-    totalHeight = calculateYPos + MARGIN_TOP + 100;  // Increased padding
-    
-    // Set minimum size based on content
+    totalHeight = yPos + MARGIN_BOTTOM;
     setMinimumHeight(totalHeight);
-    
-    // Second pass: actual rendering
-    int yPos = MARGIN_TOP;
-    if (rootNode) {
-        renderNode(rootNode, painter, yPos);
-    }
 }
 
-void HTMLRenderer::renderText(QPainter& painter, int& yPos, const std::string& text, int indent) {
+void HTMLRenderer::renderText(QPainter& painter, int& yPos, const std::string& text, int xOffset) {
+    // Skip if this is title text and we're not in a heading
     if (text.empty()) return;
     
-    QFont font("Arial", 12);
-    painter.setFont(font);
-    
-    QFontMetrics metrics(font);
+    QFontMetrics fm(painter.font());
     QString qtext = QString::fromStdString(text);
-    int maxWidth = width() - (MARGIN_LEFT + indent + MARGIN_RIGHT);
     
-    QStringList words = qtext.split(' ');
-    QString currentLine;
+    // Word wrap the text
+    QRect bounds(MARGIN_LEFT + xOffset, yPos, 
+                width() - (2 * MARGIN_LEFT + xOffset), LINE_HEIGHT);
+    QRect usedRect = fm.boundingRect(bounds, 
+                                   Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
+                                   qtext);
     
-    for (const QString& word : words) {
-        QString testLine = currentLine.isEmpty() ? word : currentLine + ' ' + word;
-        if (metrics.horizontalAdvance(testLine) <= maxWidth) {
-            currentLine = testLine;
-        } else {
-            painter.drawText(MARGIN_LEFT + indent, yPos, currentLine);
-            yPos += LINE_HEIGHT;
-            currentLine = word;
-        }
-    }
-    
-    if (!currentLine.isEmpty()) {
-        painter.drawText(MARGIN_LEFT + indent, yPos, currentLine);
-        yPos += LINE_HEIGHT;
-    }
+    painter.drawText(bounds, Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop, qtext);
+    yPos += usedRect.height() + 5;  // Add a small gap between text blocks
 }
 
 void HTMLRenderer::renderHeading(QPainter& painter, int& yPos, const std::string& text, int level) {
-    if (text.empty()) return;
+    QFont font = painter.font();
+    int fontSize;
     
-    QFont font("Arial", 24 - ((level - 1) * 4));
+    // Set font size based on heading level
+    switch (level) {
+        case 1: fontSize = 32; break;
+        case 2: fontSize = 28; break;
+        case 3: fontSize = 24; break;
+        case 4: fontSize = 20; break;
+        case 5: fontSize = 18; break;
+        default: fontSize = 16; break;
+    }
+    
+    // Save the current font
+    QFont oldFont = painter.font();
+    
+    // Set up heading font
+    font.setPointSize(fontSize);
     font.setBold(true);
     painter.setFont(font);
     
-    yPos += 20;
-    
+    // Calculate text height
+    QFontMetrics fm(font);
     QString qtext = QString::fromStdString(text);
-    painter.drawText(MARGIN_LEFT, yPos, qtext);
-    yPos += font.pointSize() + 20;
+    QRect textRect = fm.boundingRect(QRect(MARGIN_LEFT, yPos, 
+                                         width() - 2 * MARGIN_LEFT, fontSize * 2),
+                                   Qt::TextWordWrap | Qt::AlignLeft,
+                                   qtext);
+    
+    // Draw the heading text
+    painter.drawText(textRect, Qt::TextWordWrap | Qt::AlignLeft, qtext);
+    
+    // Update yPos to include only the text height
+    yPos = textRect.bottom();
+    
+    // Restore the original font
+    painter.setFont(oldFont);
 }
 
 void HTMLRenderer::renderList(QPainter& painter, int& yPos, const ASTNode* node, int depth) {
-    if (!node || node->children.empty()) return;
+    int bulletX = MARGIN_LEFT + depth * 20;
+    int textX = bulletX + 20;  // Space for bullet/number
+    bool isOrdered = node->attributes.find("type=\"ordered\"") != std::string::npos;
+    int itemNumber = 1;  // Counter for ordered lists
     
-    // Debug print
-    std::cout << "Rendering list with " << node->children.size() << " children" << std::endl;
-    printNodeType(node);
-    
-    yPos += LINE_HEIGHT; // Space before list
-    int indent = depth * 20;
-    
-    for (const auto* item : node->children) {
-        if (!item) continue;
-        
-        // Debug print
-        std::cout << "List item: " << std::endl;
-        printNodeType(item);
-        
-        // Calculate positions
-        int bulletX = MARGIN_LEFT + indent + 5;  // Bullet point position
-        int bulletY = yPos - 5;  // Align with text baseline
-        int textIndent = indent + 20;  // Text position after bullet
-        
-        // Draw bullet point
-        painter.save();
-        painter.setBrush(Qt::black);
-        painter.setPen(Qt::black);
-        painter.drawEllipse(QPoint(bulletX, bulletY), 3, 3);
-        painter.restore();
-        
-        // Handle the content
-        if (!item->children.empty()) {
-            for (const auto* child : item->children) {
-                if (!child) continue;
-                
-                // Debug print
-                std::cout << "List item child: " << std::endl;
-                printNodeType(child);
-                
-                if (child->type == NodeType::TEXT) {
-                    renderText(painter, yPos, child->content, textIndent);
-                } else if (child->type == NodeType::LINK) {
-                    renderLink(painter, yPos, child, textIndent);
-                } else {
-                    renderNode(child, painter, yPos, depth + 1);
+    for (const auto* child : node->children) {
+        if (child && child->type == NodeType::LIST_ITEM) {
+            QFontMetrics fm(painter.font());
+            int bulletBaseline = yPos + fm.ascent();
+            
+            // First render the content to get its height
+            for (const auto* itemChild : child->children) {
+                if (itemChild) {
+                    int savedMargin = MARGIN_LEFT;
+                    MARGIN_LEFT = textX;
+                    renderNode(itemChild, painter, yPos, depth);
+                    MARGIN_LEFT = savedMargin;
                 }
             }
+            
+            // Draw bullet point or number
+            if (isOrdered) {
+                painter.drawText(QPoint(bulletX, bulletBaseline), 
+                               QString::number(itemNumber++) + ".");
+            } else {
+                painter.drawText(QPoint(bulletX, bulletBaseline), "•");
+            }
+            
+            yPos += 5;
         }
-        
-        yPos += LINE_HEIGHT;  // Space after each item
     }
-    
-    yPos += LINE_HEIGHT / 2;  // Space after list
 }
 
 void HTMLRenderer::renderLink(QPainter& painter, int& yPos, const ASTNode* node, int indent) {
@@ -180,42 +174,75 @@ void HTMLRenderer::renderFormattedText(QPainter& painter, int& yPos, const ASTNo
     QFont formattedFont = originalFont;
     QPen originalPen = painter.pen();
     
-    bool isBlockquote = node->attributes.find("type=\"blockquote\"") != std::string::npos;
-    
-    // Apply formatting based on type
-    if (node->attributes.find("type=\"strong\"") != std::string::npos) {
-        formattedFont.setBold(true);
-        painter.setFont(formattedFont);
-    } else if (node->attributes.find("type=\"emphasis\"") != std::string::npos) {
-        formattedFont.setItalic(true);
-        painter.setFont(formattedFont);
-    } else if (node->attributes.find("type=\"preformatted\"") != std::string::npos) {
+    // Get text content from node or its children
+    QString text;
+    if (!node->content.empty()) {
+        text = QString::fromStdString(node->content);
+    } else if (!node->children.empty() && node->children[0] && 
+               node->children[0]->type == NodeType::TEXT) {
+        text = QString::fromStdString(node->children[0]->content);
+    }
+
+    // Special handling for different types
+    if (node->attributes.find("type=\"blockquote\"") != std::string::npos) {
+        // Add left margin for blockquote
+        int blockquoteIndent = 40;
+        QFontMetrics fm(formattedFont);
+        
+        QRect textRect(MARGIN_LEFT + indent + blockquoteIndent, yPos - fm.ascent(),
+                      width() - (MARGIN_LEFT + indent + blockquoteIndent + MARGIN_RIGHT),
+                      fm.height() * 2);
+                      
+        painter.drawText(textRect, Qt::TextWordWrap | Qt::AlignLeft, text);
+        yPos += fm.boundingRect(textRect, Qt::TextWordWrap | Qt::AlignLeft, text).height() + LINE_HEIGHT;
+        return;
+    }
+    else if (node->attributes.find("type=\"code\"") != std::string::npos) {
         formattedFont.setFamily("Courier New");
         painter.setFont(formattedFont);
-    } else if (isBlockquote) {
-        yPos += 20;  // Increased spacing before blockquote
-        indent += 40;  // Increased indentation for blockquote
+        QFontMetrics fm(formattedFont);
+        
+        // Draw background
+        QRect bgRect(MARGIN_LEFT + indent, yPos - fm.ascent(),
+                    width() - (MARGIN_LEFT + indent + MARGIN_RIGHT),
+                    fm.height());
+        painter.fillRect(bgRect, QColor(240, 240, 240));
+        
+        // Draw text
+        painter.drawText(MARGIN_LEFT + indent + 5, yPos, text);
+        yPos += LINE_HEIGHT;
+        return;
+    }
+    else if (node->attributes.find("type=\"small\"") != std::string::npos) {
+        formattedFont.setPointSize(originalFont.pointSize() * 0.8);
+        painter.setFont(formattedFont);
+        painter.drawText(MARGIN_LEFT + indent, yPos, text);
+        yPos += LINE_HEIGHT;
+        return;
+    }
+    else if (node->attributes.find("type=\"strong\"") != std::string::npos) {
+        formattedFont.setBold(true);
+    }
+    else if (node->attributes.find("type=\"emphasis\"") != std::string::npos) {
+        formattedFont.setItalic(true);
+    }
+    else if (node->attributes.find("type=\"underline\"") != std::string::npos) {
+        formattedFont.setUnderline(true);
     }
     
-    // Handle text content
-    if (!node->content.empty()) {
-        painter.drawText(MARGIN_LEFT + indent, yPos, QString::fromStdString(node->content));
-    }
+    painter.setFont(formattedFont);
     
-    // Handle child nodes
-    for (const auto* child : node->children) {
-        if (child && child->type == NodeType::TEXT) {
-            painter.drawText(MARGIN_LEFT + indent, yPos, 
-                           QString::fromStdString(child->content));
-            yPos += LINE_HEIGHT;  // Add line spacing after each text node
-        } else if (child) {
-            renderNode(child, painter, yPos, indent);
+    // Handle regular formatted text
+    if (!text.isEmpty()) {
+        painter.drawText(MARGIN_LEFT + indent, yPos, text);
+        yPos += LINE_HEIGHT;
+    } else {
+        // Process children only if we haven't rendered text directly
+        for (const auto* child : node->children) {
+            if (child) {
+                renderNode(child, painter, yPos, indent);
+            }
         }
-    }
-    
-    // Add extra spacing after blockquote
-    if (isBlockquote) {
-        yPos += 20;  // Increased spacing after blockquote
     }
     
     // Reset font and pen
@@ -293,60 +320,100 @@ void HTMLRenderer::renderParagraph(QPainter& painter, int& yPos, const ASTNode* 
         }
     }
     
-    yPos += LINE_HEIGHT * 1.5; // Increased from LINE_HEIGHT
+    // Don't add extra spacing here - let the parent handle spacing
 }
 
-void HTMLRenderer::renderNode(const ASTNode* node, QPainter& painter, int& yPos, int depth) {
+void HTMLRenderer::renderNode(const ASTNode* node, QPainter& painter, int& yPos, int indentLevel) {
     if (!node) return;
-
+    
+    qDebug() << "Rendering node type:" << static_cast<int>(node->type);
+    
     try {
-        // Debug print
-        std::cout << "Rendering node: " << std::endl;
-        printNodeType(node);
-        
+        // Skip rendering the HEAD section content
+        if (node->type == NodeType::HEAD) {
+            return;
+        }
+
         switch (node->type) {
-            case NodeType::LIST:  // Make sure this case exists
-                renderList(painter, yPos, node, depth);
-                break;
-                
             case NodeType::TEXT:
-                if (!node->content.empty()) {
-                    renderText(painter, yPos, node->content, depth * 20);
-                }
+                renderText(painter, yPos, node->content, indentLevel * 20);
                 break;
 
             case NodeType::HEADING:
-                if (!node->children.empty() && node->children[0]) {
+                if (node->children.size() > 0 && node->children[0]->type == NodeType::TEXT) {
                     renderHeading(painter, yPos, node->children[0]->content, node->heading_level);
+                    yPos += LINE_HEIGHT * 2;  // Doubled the spacing after headings
                 }
                 break;
 
             case NodeType::PARAGRAPH:
-                renderParagraph(painter, yPos, node, depth * 20);
+                renderParagraph(painter, yPos, node, indentLevel * 20);
+                yPos += LINE_HEIGHT;  // Keep paragraph spacing as is
+                break;
+
+            case NodeType::LIST:
+                renderList(painter, yPos, node, indentLevel);
                 break;
 
             case NodeType::FORMATTED_TEXT:
-                renderFormattedText(painter, yPos, node, depth * 20);
+                renderFormattedText(painter, yPos, node, indentLevel * 20);
                 break;
 
             case NodeType::LINK:
-                renderLink(painter, yPos, node, depth * 20);
+                renderLink(painter, yPos, node, indentLevel * 20);
                 break;
 
-            case NodeType::IMAGE:
-                renderImage(painter, yPos, node, depth * 20);
+            case NodeType::IMAGE: {
+                // Extract image source from attributes
+                std::string src;
+                size_t srcPos = node->attributes.find("src=\"");
+                if (srcPos != std::string::npos) {
+                    srcPos += 5; // length of 'src="'
+                    size_t endPos = node->attributes.find("\"", srcPos);
+                    if (endPos != std::string::npos) {
+                        src = node->attributes.substr(srcPos, endPos - srcPos);
+                    }
+                }
+
+                if (!src.empty()) {
+                    QImage image(QString::fromStdString(src));
+                    if (!image.isNull()) {
+                        // Scale image if it's too large
+                        int maxWidth = width() - (MARGIN_LEFT + indentLevel + MARGIN_RIGHT);
+                        if (image.width() > maxWidth) {
+                            image = image.scaledToWidth(maxWidth, Qt::SmoothTransformation);
+                        }
+                        
+                        // Draw the image
+                        painter.drawImage(QPoint(MARGIN_LEFT + indentLevel, yPos), image);
+                        yPos += image.height() + LINE_HEIGHT;
+                    } else {
+                        // Draw placeholder or alt text if image can't be loaded
+                        QString altText = "Image not found";
+                        size_t altPos = node->attributes.find("alt=\"");
+                        if (altPos != std::string::npos) {
+                            altPos += 5; // length of 'alt="'
+                            size_t endPos = node->attributes.find("\"", altPos);
+                            if (endPos != std::string::npos) {
+                                altText = QString::fromStdString(node->attributes.substr(altPos, endPos - altPos));
+                            }
+                        }
+                        painter.drawText(MARGIN_LEFT + indentLevel, yPos, "[" + altText + "]");
+                        yPos += LINE_HEIGHT;
+                    }
+                }
                 break;
+            }
 
             default:
+                // Recursively render children for other node types
                 for (const auto* child : node->children) {
-                    if (child) {
-                        renderNode(child, painter, yPos, depth);
-                    }
+                    renderNode(child, painter, yPos, indentLevel);
                 }
                 break;
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error rendering node: " << e.what() << std::endl;
+        qDebug() << "Error rendering node:" << e.what();
     }
 }
 
@@ -359,37 +426,12 @@ void HTMLRenderer::mousePressEvent(QMouseEvent* event) {
     }
 }
 
-void HTMLRenderer::renderImage(QPainter& painter, int& yPos, const ASTNode* node, int indent) {
-    if (!node) return;
-    
-    // Extract src from attributes
-    std::string attrs = node->attributes;
-    size_t srcStart = attrs.find("src=\"");
-    if (srcStart != std::string::npos) {
-        srcStart += 5; // length of 'src="'
-        size_t srcEnd = attrs.find("\"", srcStart);
-        if (srcEnd != std::string::npos) {
-            QString imagePath = QString::fromStdString(attrs.substr(srcStart, srcEnd - srcStart));
-            QImage image(imagePath);
-            
-            if (!image.isNull()) {
-                // Scale image if needed while maintaining aspect ratio
-                int maxWidth = width() - (MARGIN_LEFT + indent + MARGIN_RIGHT);
-                if (image.width() > maxWidth) {
-                    image = image.scaledToWidth(maxWidth, Qt::SmoothTransformation);
-                }
-                
-                painter.drawImage(MARGIN_LEFT + indent, yPos, image);
-                yPos += image.height() + LINE_HEIGHT * 2; // Add space after image
-            }
-        }
-    }
-}
-
 QSize HTMLRenderer::sizeHint() const {
     return QSize(800, totalHeight);
 }
 
 QSize HTMLRenderer::minimumSizeHint() const {
     return QSize(400, std::min(600, totalHeight));
-} 
+}
+
+int HTMLRenderer::MARGIN_LEFT = 20; 

@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QDebug>
 #include <iostream>
 #include "ast.hpp"
 
@@ -21,10 +22,11 @@ protected:
 
 private:
     ASTNode* rootNode;
-    const int MARGIN_LEFT = 20;
-    const int MARGIN_RIGHT = 20;
-    const int MARGIN_TOP = 20;
-    const int LINE_HEIGHT = 20;
+    static const int MARGIN_TOP = 20;
+    static const int MARGIN_BOTTOM = 20;
+    static int MARGIN_LEFT;
+    static const int MARGIN_RIGHT = 20;
+    static const int LINE_HEIGHT = 20;
     
     struct ClickableArea {
         QRect rect;
@@ -34,14 +36,14 @@ private:
     
     int totalHeight;
     
-    void renderNode(const ASTNode* node, QPainter& painter, int& yPos, int depth = 0);
-    void renderText(QPainter& painter, int& yPos, const std::string& text, int indent = 0);
+    void renderNode(const ASTNode* node, QPainter& painter, int& yPos, int indentLevel);
+    void renderText(QPainter& painter, int& yPos, const std::string& text, int indent);
     void renderHeading(QPainter& painter, int& yPos, const std::string& text, int level);
-    void renderList(QPainter& painter, int& yPos, const ASTNode* node, int depth);
-    void renderLink(QPainter& painter, int& yPos, const ASTNode* node, int indent = 0);
+    void renderList(QPainter& painter, int& yPos, const ASTNode* node, int indentLevel);
+    void renderLink(QPainter& painter, int& yPos, const ASTNode* node, int indent);
     void renderImage(QPainter& painter, int& yPos, const ASTNode* node, int indent = 0);
-    void renderFormattedText(QPainter& painter, int& yPos, const ASTNode* node, int indent = 0);
-    void renderParagraph(QPainter& painter, int& yPos, const ASTNode* node, int indent = 0);
+    void renderFormattedText(QPainter& painter, int& yPos, const ASTNode* node, int indent);
+    void renderParagraph(QPainter& painter, int& yPos, const ASTNode* node, int indent);
 
     void printNodeType(const ASTNode* node) {
         std::cout << "Node type: " << static_cast<int>(node->type) << std::endl;

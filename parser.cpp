@@ -24,6 +24,7 @@ ASTNode* parse_html_file(const char* filename) {
     
     if (root) {
         std::cout << "AST created successfully\n";
+        root->print_ast();
     } else {
         std::cout << "Failed to create AST\n";
     }

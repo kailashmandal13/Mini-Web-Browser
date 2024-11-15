@@ -20,16 +20,19 @@ ASTNode* root = nullptr;
 %token BODY_START BODY_END NAV_START NAV_END HEADER_START HEADER_END
 %token <number> H_START H_END
 %token P_START P_END SECTION_START SECTION_END ARTICLE_START ARTICLE_END 
-%token ASIDE_START ASIDE_END FOOTER_START FOOTER_END UL_START UL_END OL_START OL_END
+%token ASIDE_START ASIDE_END FOOTER_START FOOTER_END UL_START UL_END
+%token OL_START OL_END
 %token LI_START LI_END STRONG_START STRONG_END EM_START EM_END
 %token PRE_START PRE_END BLOCKQUOTE_START BLOCKQUOTE_END
 %token <text> A_START A_END IMG TEXT DOCTYPE
+%token CODE_START CODE_END SMALL_START SMALL_END U_START U_END
 
 %type <node> document html html_content head_content body_content body_elements body_element
 %type <node> nav_element header_element section_element article_element aside_element footer_element
 %type <node> p_element heading list list_items list_item link img_element formatted_element mixed_content
 %type <node> text_content header_content header_item section_content article_content aside_content
 %type <node> footer_content footer_item article_item aside_item title
+%type <node> code_element small_element
 
 %%
 
@@ -86,7 +89,7 @@ body_elements: body_element { auto* node = new ASTNode(NodeType::BODY); node->ad
     | body_elements body_element { $1->add_child($2); $$ = $1; };
 
 body_element: nav_element { $$ = $1; } | header_element { $$ = $1; } | section_element { $$ = $1; } 
-    | aside_element { $$ = $1; } | footer_element { $$ = $1; } | list { $$ = $1; } | p_element { $$ = $1; };
+    | aside_element { $$ = $1; } | footer_element { $$ = $1; } | list { $$ = $1; } | p_element { $$ = $1; } | code_element { $$ = $1; } | small_element { $$ = $1; };
 
 nav_element: NAV_START list NAV_END { auto* node = new ASTNode(NodeType::NAV); if ($2) node->add_child($2); $$ = node; } 
     | NAV_START mixed_content NAV_END { auto* node = new ASTNode(NodeType::NAV); if ($2) node->add_child($2); $$ = node; };
@@ -152,10 +155,32 @@ heading: H_START mixed_content H_END {
     $$ = node;
 };
 
-list: UL_START list_items UL_END { $$ = $2; };
+list: UL_START list_items UL_END { 
+    auto* node = new ASTNode(NodeType::LIST); 
+    if ($2) {
+        for (auto* child : $2->children) node->add_child(child);
+        $2->children.clear(); delete $2;
+    }
+    node->attributes = "type=\"unordered\""; 
+    $$ = node; 
+} | OL_START list_items OL_END { 
+    auto* node = new ASTNode(NodeType::LIST); 
+    if ($2) {
+        for (auto* child : $2->children) node->add_child(child);
+        $2->children.clear(); delete $2;
+    }
+    node->attributes = "type=\"ordered\""; 
+    $$ = node; 
+};
 
-list_items: list_item { auto* node = new ASTNode(NodeType::LIST); node->add_child($1); $$ = node; } 
-    | list_items list_item { $1->add_child($2); $$ = $1; };
+list_items: list_item { 
+    auto* node = new ASTNode(NodeType::CONTAINER); 
+    if ($1) node->add_child($1); 
+    $$ = node; 
+} | list_items list_item { 
+    if ($1 && $2) $1->add_child($2); 
+    $$ = $1; 
+};
 
 list_item: LI_START mixed_content LI_END {
     auto* node = new ASTNode(NodeType::LIST_ITEM);
@@ -211,11 +236,81 @@ formatted_element: STRONG_START mixed_content STRONG_END {
         } else node->add_child($2);
     }
     $$ = node;
+} | SMALL_START mixed_content SMALL_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT);
+    node->attributes = "type=\"small\"";
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
+} | CODE_START mixed_content CODE_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT); 
+    node->attributes = "type=\"code\"";
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
+} | U_START mixed_content U_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT); 
+    node->attributes = "type=\"underline\"";
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
 };
 
 article_item: heading { $$ = $1; } | p_element { $$ = $1; } | formatted_element { $$ = $1; };
 
 aside_item: p_element { $$ = $1; } | list { $$ = $1; };
+
+code_element: CODE_START mixed_content CODE_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT);
+    node->attributes = "type=\"code\"";
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
+} | CODE_START TEXT CODE_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT);
+    node->attributes = "type=\"code\"";
+    auto* text_node = new ASTNode(NodeType::TEXT);
+    text_node->content = std::string($2);
+    free($2);
+    node->add_child(text_node);
+    $$ = node;
+};
+
+small_element: SMALL_START mixed_content SMALL_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT);
+    node->attributes = "type=\"small\"";
+    if ($2) {
+        if ($2->type == NodeType::PARAGRAPH) {
+            for (auto* child : $2->children) node->add_child(child);
+            $2->children.clear(); delete $2;
+        } else node->add_child($2);
+    }
+    $$ = node;
+} | SMALL_START TEXT SMALL_END {
+    auto* node = new ASTNode(NodeType::FORMATTED_TEXT);
+    node->attributes = "type=\"small\"";
+    auto* text_node = new ASTNode(NodeType::TEXT);
+    text_node->content = std::string($2);
+    free($2);
+    node->add_child(text_node);
+    $$ = node;
+};
 
 %%
 

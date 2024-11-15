@@ -96,7 +96,13 @@ extern int yydebug;
     A_END = 297,                   /* A_END  */
     IMG = 298,                     /* IMG  */
     TEXT = 299,                    /* TEXT  */
-    DOCTYPE = 300                  /* DOCTYPE  */
+    DOCTYPE = 300,                 /* DOCTYPE  */
+    CODE_START = 301,              /* CODE_START  */
+    CODE_END = 302,                /* CODE_END  */
+    SMALL_START = 303,             /* SMALL_START  */
+    SMALL_END = 304,               /* SMALL_END  */
+    U_START = 305,                 /* U_START  */
+    U_END = 306                    /* U_END  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -108,7 +114,7 @@ union YYSTYPE
 #line 17 "parser.y"
  char* text; int number; ASTNode* node; 
 
-#line 112 "parser.tab.h"
+#line 118 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

@@ -70,93 +70,166 @@ QString TabManager::getTabUrl(int index) const {
 }
 
 void TabManager::loadUrlInTab(int index, const QString& url) {
+    if (!tabs.contains(index)) {
+        tabs[index] = TabInfo();
+    }
+    
     qDebug() << "Loading URL in tab" << index << ":" << url;
+    auto& tab = tabs[index];
+    tab.url = url;
     
-    if (index < 0 || index >= count()) {
-        qDebug() << "Invalid tab index:" << index;
-        return;
-    }
-
-    // Create new content widget but don't delete the old tab yet
-    QWidget* newWidget = new QWidget();
-    QVBoxLayout* layout = new QVBoxLayout(newWidget);
-    layout->setContentsMargins(0, 0, 0, 0);
+    // Update history
+    updateTabHistory(index, url);
+    saveHistory(url);
     
-    // Create a loading indicator
+    // Show loading indicator
+    QWidget* loadingWidget = new QWidget();
+    QVBoxLayout* loadingLayout = new QVBoxLayout(loadingWidget);
     QLabel* loadingLabel = new QLabel("Loading...");
-    layout->addWidget(loadingLabel);
-    
-    // Replace the tab widget
-    QWidget* oldWidget = widget(index);
+    loadingLayout->addWidget(loadingLabel);
     removeTab(index);
-    insertTab(index, newWidget, url);
-    setCurrentIndex(index);
-    
-    // Now we can safely delete the old widget
-    if (oldWidget) {
-        oldWidget->deleteLater();
-    }
+    insertTab(index, loadingWidget, url);
     
     // Fetch content
-    QString htmlContent = NetworkManager::instance().fetchUrlSync(url);
-    if (htmlContent.isEmpty()) {
-        qDebug() << "Failed to fetch content for URL:" << url;
-        delete loadingLabel;
-        QLabel* errorLabel = new QLabel("Error: Failed to fetch content");
-        layout->addWidget(errorLabel);
-        return;
-    }
+    QString content = NetworkManager::instance().fetchUrlSync(url);
+    qDebug() << "Fetched content length:" << content.length();
     
-    // Start loading content
-    ThreadPoolManager::instance().parseHtml(
-        htmlContent,
-        [this, index, layout, loadingLabel, url](ASTNode* root) {
-            QMetaObject::invokeMethod(this, [this, root, index, layout, loadingLabel, url]() {
+    if (!content.isEmpty()) {
+        ThreadPoolManager::instance().parseHtml(content, [this, index, url, content](ASTNode* root) {
+            QMetaObject::invokeMethod(this, [this, root, index, url]() {
                 if (root) {
-                    // Find the title node
-                    QString title = "New Tab";
+                    // Extract title from AST
+                    QString pageTitle = url;  // Default to URL
                     for (const auto* child : root->children) {
                         if (child && child->type == NodeType::HTML) {
                             for (const auto* htmlChild : child->children) {
                                 if (htmlChild && htmlChild->type == NodeType::HEAD) {
                                     for (const auto* headChild : htmlChild->children) {
-                                        if (headChild && headChild->type == NodeType::TITLE) {
-                                            if (!headChild->children.empty() && 
-                                                headChild->children[0]->type == NodeType::TEXT) {
-                                                title = QString::fromStdString(headChild->children[0]->content);
-                                                break;
-                                            }
+                                        if (headChild && headChild->type == NodeType::TITLE &&
+                                            !headChild->children.empty() &&
+                                            headChild->children[0]->type == NodeType::TEXT) {
+                                            pageTitle = QString::fromStdString(headChild->children[0]->content);
+                                            break;
                                         }
                                     }
+                                    break;
                                 }
                             }
+                            break;
                         }
                     }
-                    
+
                     // Create scroll area and renderer
-                    QScrollArea* scrollArea = new QScrollArea();
-                    HTMLRenderer* renderer = new HTMLRenderer(root);
-                    scrollArea->setWidget(renderer);
+                    QScrollArea* scrollArea = new QScrollArea(this);
                     scrollArea->setWidgetResizable(true);
                     
-                    delete loadingLabel;
-                    layout->addWidget(scrollArea);
+                    QWidget* contentWidget = new QWidget(scrollArea);
+                    QVBoxLayout* layout = new QVBoxLayout(contentWidget);
                     
-                    // Update tab title and info
-                    setTabText(index, title);
-                    TabInfo info;
-                    info.url = url;
-                    info.title = title;
-                    tabs[index] = info;
+                    HTMLRenderer* renderer = new HTMLRenderer(root, contentWidget);
+                    layout->addWidget(renderer);
+                    layout->setContentsMargins(0, 0, 0, 0);  // Remove layout margins
                     
-                    // Emit signal for URL bar update
-                    emit tabUrlChanged(index, url);
+                    contentWidget->setLayout(layout);
+                    scrollArea->setWidget(contentWidget);
+                    
+                    removeTab(index);
+                    insertTab(index, scrollArea, pageTitle);  // Use extracted title
+                    setCurrentIndex(index);
                 } else {
-                    delete loadingLabel;
-                    QLabel* errorLabel = new QLabel("Error: Failed to parse HTML");
-                    layout->addWidget(errorLabel);
+                    qDebug() << "Failed to parse HTML";
+                    QLabel* errorLabel = new QLabel("Error: Failed to parse content");
+                    removeTab(index);
+                    insertTab(index, errorLabel, url);
                 }
             }, Qt::QueuedConnection);
+        });
+    } else {
+        qDebug() << "Failed to fetch content for URL:" << url;
+        QLabel* errorLabel = new QLabel("Error: Failed to fetch content");
+        removeTab(index);
+        insertTab(index, errorLabel, url);
+    }
+    
+    setCurrentIndex(index);
+}
+
+void TabManager::updateTabHistory(int index, const QString& url) {
+    if (!tabs.contains(index)) return;
+    
+    auto& tab = tabs[index];
+    
+    // If we're not at the end of history, truncate forward history
+    if (tab.historyIndex < tab.history.size() - 1) {
+        tab.history.remove(tab.historyIndex + 1, 
+                         tab.history.size() - tab.historyIndex - 1);
+    }
+    
+    // Add new URL to history
+    tab.history.append(url);
+    tab.historyIndex = tab.history.size() - 1;
+}
+
+void TabManager::saveHistory(const QString& url) {
+    // Save to global history
+    QStringList history = settings.value("history").toStringList();
+    history.removeAll(url);  // Remove if exists
+    history.append(url);     // Add to end
+    
+    // Keep only last 100 entries
+    while (history.size() > 100) {
+        history.removeFirst();
+    }
+    
+    settings.setValue("history", history);
+}
+
+void TabManager::navigateBack(int index) {
+    if (!tabs.contains(index)) return;
+    
+    auto& tab = tabs[index];
+    if (tab.historyIndex > 0) {
+        tab.historyIndex--;
+        QString url = tab.history[tab.historyIndex];
+        loadUrlInTab(index, url);
+    }
+}
+
+void TabManager::navigateForward(int index) {
+    if (!tabs.contains(index)) return;
+    
+    auto& tab = tabs[index];
+    if (tab.historyIndex < tab.history.size() - 1) {
+        tab.historyIndex++;
+        QString url = tab.history[tab.historyIndex];
+        loadUrlInTab(index, url);
+    }
+}
+
+void TabManager::saveSession() {
+    QStringList urls;
+    for (int i = 0; i < count(); ++i) {
+        if (tabs.contains(i)) {
+            urls.append(tabs[i].url);
         }
-    );
+    }
+    settings.setValue("session", urls);
+    settings.sync();
+}
+
+void TabManager::restoreSession() {
+    QStringList urls = settings.value("session").toStringList();
+    if (urls.isEmpty()) {
+        // Add empty tab if no session to restore
+        addNewTab("");
+        return;
+    }
+    
+    for (const QString& url : urls) {
+        addNewTab(url);
+    }
+}
+
+TabManager::~TabManager() {
+    saveSession();
 } 

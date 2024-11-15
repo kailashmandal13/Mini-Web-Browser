@@ -13,7 +13,12 @@ QString NetworkManager::fetchUrlSync(const QString& url) {
     qDebug() << "Attempting to fetch URL:" << url;
     
     if (url.startsWith("http://") || url.startsWith("https://")) {
-        QNetworkReply* reply = manager.get(QNetworkRequest(QUrl(url)));
+        QUrl qUrl(url);
+        QNetworkRequest request;
+        request.setUrl(qUrl);
+        
+        QNetworkReply* reply = manager.get(request);
+        
         QEventLoop loop;
         connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
         loop.exec();

@@ -13,6 +13,7 @@ class HTMLRenderer : public QWidget {
     Q_OBJECT
 public:
     explicit HTMLRenderer(ASTNode* root, QWidget* parent = nullptr);
+    ~HTMLRenderer();
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
@@ -45,7 +46,5 @@ private:
     void renderFormattedText(QPainter& painter, int& yPos, const ASTNode* node, int indent);
     void renderParagraph(QPainter& painter, int& yPos, const ASTNode* node, int indent);
 
-    void printNodeType(const ASTNode* node) {
-        std::cout << "Node type: " << static_cast<int>(node->type) << std::endl;
-    }
+    void calculateTotalHeight(const ASTNode* node, int& height, int indentLevel = 0);
 }; 

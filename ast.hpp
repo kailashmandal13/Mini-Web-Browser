@@ -23,8 +23,10 @@ struct ASTNode {
     void print_ast(int indent = 0) const;
     void print_ast_to_file(std::ofstream& out, int indent = 0) const;
     
-private:
+public:
     static std::string get_node_type_str(NodeType type);
+    
+private:
     std::string get_dom_node_str() const;
     void print_dom(std::ofstream& out, int depth) const;
 }; 

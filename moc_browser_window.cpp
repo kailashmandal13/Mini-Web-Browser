@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_BrowserWindow_t {
-    QByteArrayData data[8];
-    char stringdata0[89];
+    QByteArrayData data[14];
+    char stringdata0[171];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -39,12 +39,20 @@ QT_MOC_LITERAL(3, 32, 9), // "addNewTab"
 QT_MOC_LITERAL(4, 42, 19), // "handleTabUrlChanged"
 QT_MOC_LITERAL(5, 62, 5), // "index"
 QT_MOC_LITERAL(6, 68, 3), // "url"
-QT_MOC_LITERAL(7, 72, 16) // "handleTabChanged"
+QT_MOC_LITERAL(7, 72, 16), // "handleTabChanged"
+QT_MOC_LITERAL(8, 89, 12), // "navigateBack"
+QT_MOC_LITERAL(9, 102, 15), // "navigateForward"
+QT_MOC_LITERAL(10, 118, 11), // "showHistory"
+QT_MOC_LITERAL(11, 130, 19), // "toggleSessionSaving"
+QT_MOC_LITERAL(12, 150, 7), // "enabled"
+QT_MOC_LITERAL(13, 158, 12) // "clearHistory"
 
     },
     "BrowserWindow\0handleUrlEntered\0\0"
     "addNewTab\0handleTabUrlChanged\0index\0"
-    "url\0handleTabChanged"
+    "url\0handleTabChanged\0navigateBack\0"
+    "navigateForward\0showHistory\0"
+    "toggleSessionSaving\0enabled\0clearHistory"
 };
 #undef QT_MOC_LITERAL
 
@@ -54,7 +62,7 @@ static const uint qt_meta_data_BrowserWindow[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       4,   14, // methods
+       9,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -62,16 +70,26 @@ static const uint qt_meta_data_BrowserWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   34,    2, 0x08 /* Private */,
-       3,    0,   35,    2, 0x08 /* Private */,
-       4,    2,   36,    2, 0x08 /* Private */,
-       7,    1,   41,    2, 0x08 /* Private */,
+       1,    0,   59,    2, 0x08 /* Private */,
+       3,    0,   60,    2, 0x08 /* Private */,
+       4,    2,   61,    2, 0x08 /* Private */,
+       7,    1,   66,    2, 0x08 /* Private */,
+       8,    0,   69,    2, 0x08 /* Private */,
+       9,    0,   70,    2, 0x08 /* Private */,
+      10,    0,   71,    2, 0x08 /* Private */,
+      11,    1,   72,    2, 0x08 /* Private */,
+      13,    0,   75,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, QMetaType::Int, QMetaType::QString,    5,    6,
     QMetaType::Void, QMetaType::Int,    5,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::Bool,   12,
+    QMetaType::Void,
 
        0        // eod
 };
@@ -86,6 +104,11 @@ void BrowserWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _i
         case 1: _t->addNewTab(); break;
         case 2: _t->handleTabUrlChanged((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
         case 3: _t->handleTabChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 4: _t->navigateBack(); break;
+        case 5: _t->navigateForward(); break;
+        case 6: _t->showHistory(); break;
+        case 7: _t->toggleSessionSaving((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 8: _t->clearHistory(); break;
         default: ;
         }
     }
@@ -120,13 +143,13 @@ int BrowserWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 4)
+        if (_id < 9)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 4;
+        _id -= 9;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 4)
+        if (_id < 9)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 4;
+        _id -= 9;
     }
     return _id;
 }

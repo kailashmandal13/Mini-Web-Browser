@@ -173,7 +173,7 @@ Execute the following command to launch the mini-browser:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/html-parser-renderer.git
+   git clone https://github.com/kailashmandal13/Mini-Web-Browser.git
    cd html-parser-renderer
    ```
 
